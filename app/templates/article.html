@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+
+
+<iframe frameborder="0"  seamless="seamless" src="{{url}}" width="100%" height="75%">
+  <p>Your browser does not support iframes.</p>
+</iframe>
+
+<div class="container">
+  <div class="navbar navbar-static-bottom">
+    <div class="navbar-inner">
+      <a class="brand" href="/index">{{a.score}}</a>
+      <ul class="nav">
+      	{% for alt in alt_articles %}
+      	<li><a href="{{alt['url']}}">{{alt['score']}}<br>{{alt['source']}}</a></li>
+		{% endfor %}
+      </ul>
+    </div>
+  </div>
+</div
+
+
+{% endblock %}
