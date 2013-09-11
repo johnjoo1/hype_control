@@ -1,9 +1,24 @@
 {% extends "base.html" %}
+
+{% block css %}
+
+{% endblock %}
+
 {% block content %}
 
-<h1>Hype Control</h1>
+<center><h1>How hyped is your news?</h1>
 
-<h4>Today's Top Stories</h4>
+<br><br>
+
+<div class="form-inline">
+	<form class="form-search" action="article" method="GET">
+		<input class="span6" id="appendedInputButton" type="text" name="request_url" placeholder="News article URL">
+		<button class="btn btn-inverse" type="submit">Go!</button>
+	</form>
+</div>
+
+</center>
+<!-- <h4>Today's Top Stories</h4>
 
 <table border="0" cellpadding="5">
 <tr>
@@ -18,6 +33,6 @@
 <td align="right">{{article.score}}</td>
 </tr>
 {% endfor %}
-</table> 
+</table>  -->
 
 {% endblock %}

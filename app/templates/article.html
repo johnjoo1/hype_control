@@ -2,11 +2,19 @@
 {% block content %}
 
 
-<iframe frameborder="0"  seamless="seamless" src="{{url}}" width="100%" height="75%">
-  <p>Your browser does not support iframes.</p>
-</iframe>
+<!-- <iframe frameborder="0"  seamless="seamless" src="{{url}}" width="100%" height="75%"> -->
+  <!-- <p>Your browser does not support iframes.</p> -->
+<!-- </iframe> -->
+<div class="span6 offset3">
+ <center><h1>{{a.title}}</h1></center>
+<!-- <img border="0" src="{{a.top_image.src}}" alt="{{a.title}}" width="500" align="absmiddle" class="img-polaroid"><br> -->
+<center><img  src="{{a.top_image.src}}" alt="{{a.title}}" width="500" ></center>
+<br>
+{{a.html_text}}
+</div>
+<br>
 
-<div class="container">
+<div class="container span12">
   <div class="navbar navbar-static-bottom">
     <div class="navbar-inner">
       <a class="brand" href="/index">{{a.score}}</a>

@@ -1,3 +1,4 @@
+<!DOCTYPE HTML>
 <html>
   <head>
     <link href="/static/css/bootstrap.min.css" rel="stylesheet" media="screen">
@@ -6,23 +7,55 @@
     <script src="/static/js/bootstrap.min.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="/static/css/bootstrap-responsive.css" rel="stylesheet">
+    <link rel="icon" href="/templates/favicon.ico" type="image/x-icon">
     {% if title %}
-    <title>{{title}} - Hype Control</title>
+    <title>Hype Control - How hyped is your news?</title>
     {% else %}
     <title>Hype Control</title>
     {% endif %}
+
+
+    <style>
+      body {
+        padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
+
+/*        background: url("https://s3-us-west-2.amazonaws.com/reviewskimmer/popcorn-small.jpg") no-repeat center center fixed;
+                -webkit-background-size: cover;
+               -moz-background-size: cover;
+               -o-background-size: cover;
+               background-size: cover;
+      }*/
+
+    {% block css %}{% endblock %}
+
+    </style>
   </head>
   <body>
-    <div class="container">
-      <div class="navbar navbar-static-top">
-        <div class="navbar-inner">
-          <a class="brand" href="/index">Hype Control</a>
-          <ul class="nav">
-            <li class="active"><a href="/index">Home</a></li>
-            <li><a href="#">Slides</a></li>
-            <li><a href="#">Contact</a></li>
-          </ul>
+
+    <div class="navbar navbar-inverse navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container">
+
+          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </a>
+
+          <div class="nav-collapse collapse">
+            <a class="brand" href="/index">Hype Control</a>
+            <ul class="nav">
+              <li class="nav"><a href="/index">Home</a></li>
+              <li><a href="#">Slides</a></li>
+              <li><a href="#">Contact</a></li>
+            </ul>
+          </div>
         </div>
+      </div>
+    </div>
+
+
+       
 
     {% block content %}{% endblock %}
   </body>

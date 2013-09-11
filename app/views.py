@@ -11,82 +11,78 @@ import goose
 import mnb_live
 from flask import request
 import judge_url
+import numpy as np
 
+model = mnb_live.Model()
+model.reload_raw_data()
+train_text, test_text, train_target, test_target = model.prepare_train_and_test_sets()
+model.train()
+# def get_top_news_urls(BASE = 'http://www.nytimes.com', limit = 5):
+#     def request_url(url, txdata, txheaders):
+#         """Gets a webpage's HTML."""
+#         req = Request(url, txdata, txheaders)
+#         handle = urlopen(req)
+#         html = handle.read()
+#         return html
 
-def get_top_news_urls(BASE = 'http://www.nytimes.com', limit = 5):
-    def request_url(url, txdata, txheaders):
-        """Gets a webpage's HTML."""
-        req = Request(url, txdata, txheaders)
-        handle = urlopen(req)
-        html = handle.read()
-        return html
+#     def remove_html_tags(data):
+#         """Removes HTML tags"""
+#         p = re.compile(r'< .*?>')
+#         return p.sub('', data)
 
-    def remove_html_tags(data):
-        """Removes HTML tags"""
-        p = re.compile(r'< .*?>')
-        return p.sub('', data)
+#     URL_REQUEST_DELAY = 1
+#     TXDATA = None
+#     TXHEADERS = {'User-agent': 'Mozilla/4.0 (compatible; MSIE 5.5; Windows NT)'}
+#     urlopen = urllib2.urlopen
+#     Request = urllib2.Request
 
-    URL_REQUEST_DELAY = 1
-    TXDATA = None
-    TXHEADERS = {'User-agent': 'Mozilla/4.0 (compatible; MSIE 5.5; Windows NT)'}
-    urlopen = urllib2.urlopen
-    Request = urllib2.Request
+#     # Install cookie jar in opener for fetching URL
+#     cookiejar = cookielib.LWPCookieJar()
+#     opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookiejar))
+#     urllib2.install_opener(opener)
+#     html = request_url('http://www.nytimes.com/', TXDATA, TXHEADERS)
 
-    # Install cookie jar in opener for fetching URL
-    cookiejar = cookielib.LWPCookieJar()
-    opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookiejar))
-    urllib2.install_opener(opener)
-    html = request_url('http://www.nytimes.com/', TXDATA, TXHEADERS)
+#     # Use BeautifulSoup to easily navigate HTML tree
+#     soup = BeautifulSoup(html)
 
-    # Use BeautifulSoup to easily navigate HTML tree
-    soup = BeautifulSoup(html)
-
-    # Retrieves html from each url on NYT Global homepage under "story" divs
-    # with h2, h3, or h5 headlines
-    urls = []
-    for story in soup.findAll('div', {'class': 'story'}):
-        for hTag in story.findAll({'h1': True, 'h5': True,'h6': True,'h3': True, },
-                                  recursive=False):
-        # for hTag in story.findAll():
-            if hTag.find('a') and hTag.find('a')['href'].startswith(BASE+'/2013'):
-                urls.append(hTag.find('a')['href'])
-                if len(urls)>=limit:    
-                    return urls
+#     # Retrieves html from each url on NYT Global homepage under "story" divs
+#     # with h2, h3, or h5 headlines
+#     urls = []
+#     for story in soup.findAll('div', {'class': 'story'}):
+#         for hTag in story.findAll({'h1': True, 'h5': True,'h6': True,'h3': True, },
+#                                   recursive=False):
+#         # for hTag in story.findAll():
+#             if hTag.find('a') and hTag.find('a')['href'].startswith(BASE+'/2013'):
+#                 urls.append(hTag.find('a')['href'])
+#                 if len(urls)>=limit:    
+#                     return urls
 
 @app.route('/')
 @app.route('/index')
 def index():
     ## Train model    
-    model = mnb_live.Model()
-    model.reload_raw_data()
-    model.train()
+    # model = mnb_live.Model()
+    # model.reload_raw_data()
+    # model.train()
 
-    urls = get_top_news_urls(BASE = 'http://www.nytimes.com', limit = 5)
-    articles = []
-    # opener = urllib2.build_opener(urllib2.HTTPCookieProcessor())
-    for url in urls:
-        j  = judge_url.JudgeUrl(url)
-        articles.append(j.a)
-        # response = opener.open(url)
-        # raw_html = response.read()
-        # g = goose.Goose()
-        # a = g.extract(raw_html=raw_html)
-        # pred, pred_prob = model.predict(raw_text=a.cleaned_text)
-        # a.score = int(pred_prob[0][1]*100.)
-        # a.url=url
-        # articles.append(a)
+    # urls = get_top_news_urls(BASE = 'http://www.nytimes.com', limit = 5)
+    # articles = []
+    # for url in urls:
+    #     j  = judge_url.JudgeUrl(url)
+    #     articles.append(j.a)
+
     ####################################################  MySQL PART
-    con = mdb.connect('localhost', 'testuser', 'test623', 'testdb');
+    # con = mdb.connect('localhost', 'testuser', 'test623', 'testdb');
 
-    with con: 
-        cur = con.cursor()
-        cur.execute("SELECT * FROM Writers")
-        rows = cur.fetchall()
-    writers = rows
+    # with con: 
+    #     cur = con.cursor()
+    #     cur.execute("SELECT * FROM Writers")
+    #     rows = cur.fetchall()
+    # writers = rows
     #########################################################3
     return render_template("index.html",
         title = 'Home',
-        articles = articles
+        # articles = articles
         )
 
 @app.route('/slides')
@@ -143,21 +139,47 @@ class BingSearchAPI():
         return requests.get(request, auth=(self.key, self.key))
 
 
+
+import markdown
+from flask import Flask
+from flask import render_template
+from flask import Markup
+
+def bold_words(original_text, words_to_bold):
+    bolded = original_text
+    for word in words_to_bold:
+        if word[2]>np.log(2):
+            bolded = re.sub('(?i)( '+word[3]+' )', r'**\1**', bolded)
+    return bolded
+
+
 @app.route('/article')
 def article():
-    model = mnb_live.Model()
-    model.reload_raw_data()
-    model.train()
-
+    # model = mnb_live.Model()
+    # model.reload_raw_data()
+    # train_text, test_text, train_target, test_target = model.prepare_train_and_test_sets()
+    # model.train()
+    stime=time.time()
     opener = urllib2.build_opener(urllib2.HTTPCookieProcessor())
-    url = request.args.get('url', '')
+    # url = request.args.get('url', '')
+    url = request.args.get('request_url', None)
     response = opener.open(url)
     raw_html = response.read()
     g = goose.Goose()
     a = g.extract(raw_html=raw_html)
+    a.html_text = Markup(markdown.markdown(a.cleaned_text))
     pred, pred_prob = model.predict(raw_text=a.cleaned_text)
     a.score = int(pred_prob[0][1]*100.)
+    print 'scrape and predict: '+str(time.time()-stime)
 
+    stime=time.time()
+    op_words = model.why_opinion_faster()
+    print 'why: '+str(time.time()-stime)    
+    bolded_text = bold_words(a.cleaned_text, op_words)
+    a.html_text = Markup(markdown.markdown(bolded_text))
+
+
+    stime=time.time()
     my_key = "vknjCZkZel4gofUWhubpLS0pXUXLbD5VqzIFgkXUHCg="
     query_string = '"'+a.title+'"'
     bing = BingSearchAPI(my_key)
@@ -167,9 +189,9 @@ def article():
             #   '$top': 10,
             #   '$skip': 0
               }
+    alt_articles=[]       
     bing_results = bing.search('Web',query_string,params).json() # requests 1.0+
     results = bing_results['d']['results']
-    alt_articles=[]
     for i,result in enumerate(results):
         if i >= 3:
             break
@@ -182,9 +204,10 @@ def article():
         art = g.extract(raw_html=raw_html)
         pred, pred_prob = model.predict(raw_text=art.cleaned_text)
         alt_articles.append({'url':url_alt, 'score':int(pred_prob[0][1]*100), 'source':url_dom})
+    print 'bing and predict: '+str(time.time()-stime)
 
     return render_template("article.html",
         url=url,
         a=a,
-        alt_articles = alt_articles
+        alt_articles = alt_articles, 
         )
