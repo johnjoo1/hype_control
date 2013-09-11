@@ -2,19 +2,56 @@
 {% block content %}
 
 
-<!-- <iframe frameborder="0"  seamless="seamless" src="{{url}}" width="100%" height="75%"> -->
-  <!-- <p>Your browser does not support iframes.</p> -->
-<!-- </iframe> -->
-<div class="span6 offset3">
+<div class="container-fluid">
+  <div class="row-fluid">
+    <div class="span2">
+      sidebar content
+    </div>
+    <div class="span6 offset1">
+      <center><h1>{{a.title}}</h1></center>
+      <!-- <img border="0" src="{{a.top_image.src}}" alt="{{a.title}}" width="500" align="absmiddle" class="img-polaroid"><br> -->
+      <center><img  src="{{a.top_image.src}}" alt="{{a.title}}" width="500" ></center>
+      <br>
+      {{a.html_text}}
+      <br>
+    </div>
+  </div>
+</div>
+
+
+<!-- <div class="span6 offset3">
  <center><h1>{{a.title}}</h1></center>
-<!-- <img border="0" src="{{a.top_image.src}}" alt="{{a.title}}" width="500" align="absmiddle" class="img-polaroid"><br> -->
 <center><img  src="{{a.top_image.src}}" alt="{{a.title}}" width="500" ></center>
 <br>
 {{a.html_text}}
 </div>
-<br>
+<br> -->
 
-<div class="container span12">
+
+<div class="navbar navbar-inverse navbar-fixed-bottom">
+  <div class="navbar-inner">
+    <div class="container">
+
+      <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </a>
+
+      <div class="nav-collapse collapse">
+        <a class="brand" href="/index">{{a.score}}</a>
+        <ul class="nav">
+          {% for alt in alt_articles %}
+          <li><a href="{{alt['url']}}">{{alt['score']}} : {{alt['source']}}</a></li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- <div class="container span12">
   <div class="navbar navbar-static-bottom">
     <div class="navbar-inner">
       <a class="brand" href="/index">{{a.score}}</a>
@@ -26,6 +63,6 @@
     </div>
   </div>
 </div
-
+ -->
 
 {% endblock %}

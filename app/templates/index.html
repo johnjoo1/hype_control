@@ -6,18 +6,28 @@
 
 {% block content %}
 
-<center><h1>How hyped is your news?</h1>
+<br>
 
-<br><br>
+<div class="row">
+	<div class="span8 offset2">
+  		<div class="well">
 
-<div class="form-inline">
-	<form class="form-search" action="article" method="GET">
-		<input class="span6" id="appendedInputButton" type="text" name="request_url" placeholder="News article URL">
-		<button class="btn btn-inverse" type="submit">Go!</button>
-	</form>
+			<center><h1>How hyped is your news?</h1>
+
+			<br><br>
+
+			<div class="form-inline">
+				<form class="form-search" action="article" method="GET">
+					<input class="span6" id="appendedInputButton" type="text" name="request_url" placeholder="News article URL">
+					<button class="btn btn-inverse" type="submit">Go!</button>
+				</form>
+			</div>
+			<!-- <hr> -->
+			</center>
+		</div>
+	</div>
 </div>
 
-</center>
 <!-- <h4>Today's Top Stories</h4>
 
 <table border="0" cellpadding="5">

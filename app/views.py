@@ -168,9 +168,10 @@ def article():
     g = goose.Goose()
     a = g.extract(raw_html=raw_html)
     a.html_text = Markup(markdown.markdown(a.cleaned_text))
+    print 'scrape: '+str(time.time()-stime)
+
     pred, pred_prob = model.predict(raw_text=a.cleaned_text)
     a.score = int(pred_prob[0][1]*100.)
-    print 'scrape and predict: '+str(time.time()-stime)
 
     stime=time.time()
     op_words = model.why_opinion_faster()
