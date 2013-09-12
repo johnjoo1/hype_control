@@ -12,6 +12,7 @@ import mnb_live
 from flask import request
 import judge_url
 import numpy as np
+import pickle
 
 model = mnb_live.Model()
 model.reload_raw_data()
@@ -173,11 +174,11 @@ def article():
     pred, pred_prob = model.predict(raw_text=a.cleaned_text)
     a.score = int(pred_prob[0][1]*100.)
 
-    stime=time.time()
-    op_words = model.why_opinion_faster()
-    print 'why: '+str(time.time()-stime)    
-    bolded_text = bold_words(a.cleaned_text, op_words)
-    a.html_text = Markup(markdown.markdown(bolded_text))
+    # stime=time.time()
+    # op_words = model.why_opinion_faster()
+    # print 'why: '+str(time.time()-stime)    
+    # bolded_text = bold_words(a.cleaned_text, op_words)
+    # a.html_text = Markup(markdown.markdown(bolded_text))
 
 
     stime=time.time()
@@ -189,6 +190,42 @@ def article():
             #   '$format': 'json',
             #   '$top': 10,
             #   '$skip': 0
+              }
+    alt_articles=[]       
+    # bing_results = bing.search('Web',query_string,params).json() # requests 1.0+
+    # results = bing_results['d']['results']
+    # for i,result in enumerate(results):
+    #     if i >= 3:
+    #         break
+    #     opener = urllib2.build_opener(urllib2.HTTPCookieProcessor())
+    #     url_alt = result['Url']
+    #     url_dom = url_alt.split('/')[2]
+    #     response = opener.open(url_alt)
+    #     raw_html = response.read()
+    #     g = goose.Goose()
+    #     art = g.extract(raw_html=raw_html)
+    #     pred, pred_prob = model.predict(raw_text=art.cleaned_text)
+    #     alt_articles.append({'url':url_alt, 'score':int(pred_prob[0][1]*100), 'source':url_dom})
+    # print 'bing and predict: '+str(time.time()-stime)
+    with open('temp_cleaned_text.pkl', 'w') as f:
+        pickle.dump([a.cleaned_text, a.title],f)
+
+    return render_template("article.html",
+        url=url,
+        a=a,
+        alt_articles = alt_articles, 
+        main_text = a.html_text
+        )
+
+@app.route('/store_alternatives')
+def store_alternatives():
+    with open('temp_cleaned_text.pkl', 'r') as f:
+        [cleaned_text, title] = pickle.load(f)
+
+    my_key = "vknjCZkZel4gofUWhubpLS0pXUXLbD5VqzIFgkXUHCg="
+    query_string = '"'+title+'"'
+    bing = BingSearchAPI(my_key)
+    params = {
               }
     alt_articles=[]       
     bing_results = bing.search('Web',query_string,params).json() # requests 1.0+
@@ -205,10 +242,26 @@ def article():
         art = g.extract(raw_html=raw_html)
         pred, pred_prob = model.predict(raw_text=art.cleaned_text)
         alt_articles.append({'url':url_alt, 'score':int(pred_prob[0][1]*100), 'source':url_dom})
-    print 'bing and predict: '+str(time.time()-stime)
 
-    return render_template("article.html",
-        url=url,
-        a=a,
-        alt_articles = alt_articles, 
-        )
+        with open('alternatives.pkl', 'w') as f:
+            pickle.dump(alt_articles,f)
+ 
+
+@app.route('/store_why')
+def store_why():
+    print 'store why is starting'
+    op_words = model.why_opinion_faster()   
+    with open('temp_cleaned_text.pkl', 'r') as f:
+        [cleaned_text, title] = pickle.load(f)
+    bolded_text = bold_words(cleaned_text, op_words)
+    with open('bolded_text.pkl','w') as f:
+        t=Markup(markdown.markdown(bolded_text))
+        pickle.dump([t, op_words],f)
+
+from flask import jsonify
+@app.route('/display_why')
+def display_why():
+    with open('bolded_text.pkl', 'r') as f:
+        t, op_words = pickle.load(f)
+        op_words.reverse()
+    return jsonify({'main_text':t, 'op_words': op_words})

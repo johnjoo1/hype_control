@@ -1,23 +1,90 @@
 {% extends "base.html" %}
 {% block content %}
 
-
+<br>
 <div class="container-fluid">
   <div class="row-fluid">
-    <div class="span2">
-      sidebar content
+
+    <div class="span6">
+      <div class="well">
+        <h3>Score: {{a.score}}</h3>
+        <br>
+        <!-- <a class="btn" href="/show_why">Show me why.</a> -->
+        <a class="btn" role="button" id="display_why_button">Show me why</a>
+        <div id="show_why"></div>
+        <br><br>
+        <a class="btn" href="">Find me alternatives</a>
+      </div>
     </div>
-    <div class="span6 offset1">
-      <center><h1>{{a.title}}</h1></center>
-      <!-- <img border="0" src="{{a.top_image.src}}" alt="{{a.title}}" width="500" align="absmiddle" class="img-polaroid"><br> -->
-      <center><img  src="{{a.top_image.src}}" alt="{{a.title}}" width="500" ></center>
-      <br>
-      {{a.html_text}}
-      <br>
+
+    <div class="span6 ">
+      <div class="well"
+        <center><h1>{{a.title}}</h1></center>
+        <!-- <img border="0" src="{{a.top_image.src}}" alt="{{a.title}}" width="500" align="absmiddle" class="img-polaroid"><br> -->
+        <center><img  src="{{a.top_image.src}}" alt="{{a.title}}" width="500" ></center>
+        <br>
+        <div id="main_text">{{main_text}}</div>
+        <br>
+      </div>
     </div>
+
   </div>
 </div>
 
+<script>
+$( document ).ready(function() {
+  $.get('/store_why', function(data){ 
+  console.log(status)    // computes and stores why data in a pickle file
+  });
+  $.get('/store_alternatives', function(data){      // computes and stores alternatives data in a pickle file
+  });
+}); 
+
+  // $.get("/display_why", function(data) {
+  //   $("#main_text").html(data['main_text'])
+  // });
+
+$("#display_why_button").click(function () {
+  $.get("/display_why", function(data) {
+
+    $("#main_text").html(data['main_text']);
+
+    var d1 = $('#show_why'); 
+    d1.append('<br> <table class="table table-condensed"><tr><td>Weight</td> <td>Word</td> <td>count</td> </tr>');
+    $.each(data['op_words'], function(i, value){
+      if (i<10){
+      d1.append('<tr><td>'+value[2]+'</td><td>'+value[3]+'</td><td>'+value[1]+'</td></tr>');
+      }else{
+        d1.append('</table>');
+        return false;
+      }
+    });
+
+    
+  });
+});
+
+// function bold_main_text(){
+//   $.get("/display_why", function(data) {
+//     console.log( $("#main_text"))
+//     $("#main_text").html(data['main_text'])
+//   });
+// }
+
+
+// $( document ).ready(function() {
+//   $.load('/store_why', function(response, status, xhr){ 
+//   console.log(status)    // computes and stores why data in a pickle file
+//   });
+// }); 
+
+// $( document ).ready(function() {
+//   $.load('/store_alternatives', function(response, status, xhr){      // computes and stores alternatives data in a pickle file
+//   });
+// }); 
+
+
+</script>
 
 <!-- <div class="span6 offset3">
  <center><h1>{{a.title}}</h1></center>
@@ -28,7 +95,7 @@
 <br> -->
 
 
-<div class="navbar navbar-inverse navbar-fixed-bottom">
+<!-- <div class="navbar navbar-inverse navbar-fixed-bottom">
   <div class="navbar-inner">
     <div class="container">
 
@@ -48,7 +115,7 @@
       </div>
     </div>
   </div>
-</div>
+</div> -->
 
 
 <!-- <div class="container span12">
