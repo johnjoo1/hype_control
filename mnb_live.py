@@ -239,8 +239,12 @@ class Model(object):
 	def why_opinion_faster(self):
 		opinion_words = []
 		ratio = self.clf.feature_log_prob_[1]-self.clf.feature_log_prob_[0]
-		opinion_words = [(count*np.exp(ratio[i]), count, ratio[i], self.vectorizer.get_feature_names()[i]) for i,count in enumerate(self.vect.toarray()[0]) if count>0]
+		opinion_words = [ ( round(count*np.exp(ratio[i]),2) ,
+							round(count,2) , 
+							round(ratio[i],2) , 
+							self.vectorizer.get_feature_names()[i] ) for i,count in enumerate(self.vect.toarray()[0]) if count>0]
 		opinion_words_sorted = sorted(opinion_words, key=lambda x:x[2])
+		opinion_words_sorted=[word for word in opinion_words_sorted if word[2]>np.log(2)]
 		return opinion_words_sorted #, news_words_sorted
 
 if __name__ == "__main__":

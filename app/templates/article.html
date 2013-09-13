@@ -1,11 +1,26 @@
 {% extends "base.html" %}
+
+{% block css %}
+
+table, table th, table td {
+    border-collapse: collapse;
+    border: #888 1px solid;
+    padding: 0 5px;
+}
+#more {
+    cursor: pointer;
+    background: #eee;
+}
+
+{% endblock %}
+
 {% block content %}
 
 <br>
 <div class="container-fluid">
   <div class="row-fluid">
 
-    <div class="span6">
+    <div class="span3 offset1">
       <div class="well">
         <h3>Score: {{a.score}}</h3>
         <br>
@@ -17,8 +32,8 @@
       </div>
     </div>
 
-    <div class="span6 ">
-      <div class="well"
+    <div class="span7">
+      <div class="well">
         <center><h1>{{a.title}}</h1></center>
         <!-- <img border="0" src="{{a.top_image.src}}" alt="{{a.title}}" width="500" align="absmiddle" class="img-polaroid"><br> -->
         <center><img  src="{{a.top_image.src}}" alt="{{a.title}}" width="500" ></center>
@@ -32,6 +47,7 @@
 </div>
 
 <script>
+// Starts processing "why" and "alternatives" after the main page has loaded.
 $( document ).ready(function() {
   $.get('/store_why', function(data){ 
   console.log(status)    // computes and stores why data in a pickle file
@@ -40,29 +56,61 @@ $( document ).ready(function() {
   });
 }); 
 
-  // $.get("/display_why", function(data) {
-  //   $("#main_text").html(data['main_text'])
-  // });
 
+// Displays the "why" word table in a bootstrap table with button click AND changes the main text to bold opinion words
 $("#display_why_button").click(function () {
-  $.get("/display_why", function(data) {
+  $.get("/display_why", function(data) {        // gets the data
 
-    $("#main_text").html(data['main_text']);
+    $("#main_text").html(data['main_text']);        // bolds the opinion words in the main text
 
-    var d1 = $('#show_why'); 
-    d1.append('<br> <table class="table table-condensed"><tr><td>Weight</td> <td>Word</td> <td>count</td> </tr>');
+    var table_html='<br> <table class="table table-condensed"><thead><tr><td>Weight</td> <td>Word</td> <td>count</td> </tr></thead>';    // creates the word table
+    table_html+='<tbody>';
     $.each(data['op_words'], function(i, value){
-      if (i<10){
-      d1.append('<tr><td>'+value[2]+'</td><td>'+value[3]+'</td><td>'+value[1]+'</td></tr>');
+      if (i<100){
+      table_html+='<tr><td>'+value[2]+'</td><td>'+value[3]+'</td><td>'+value[1]+'</td></tr>';
       }else{
-        d1.append('</table>');
+        table_html+='</tbody></table>';
         return false;
       }
     });
 
-    
+  $('#show_why').html(table_html);
+
+//
+var numShown = 5; // Initial rows shown & index
+var numMore = 5;  // Increment
+
+var $table = $('table').find('tbody');  // tbody containing all the rows
+var numRows = $table.find('tr').length; // Total # rows
+
+// $(function () {
+    // Hide rows and add clickable div
+    $table.find('tr:gt(' + (numShown - 1) + ')').hide().end()
+        .after('<tbody id="more"><tr><td colspan="' +
+               $table.find('tr:first td').length + '"><div>Show <span>' +
+               numMore + '</span> More</div</tbody></td></tr>');
+
+    $('#more').click(function() {
+        numShown = numShown + numMore;
+        // no more "show more" if done
+        if (numShown >= numRows) {
+            $('#more').remove();
+        }
+        // change rows remaining if less than increment
+        if (numRows - numShown < numMore) {
+            $('#more span').html(numRows - numShown);
+        }
+        $table.find('tr:lt(' + numShown + ')').show();
+    });
+
+// });
+//
+
   });
 });
+
+
+
 
 // function bold_main_text(){
 //   $.get("/display_why", function(data) {
