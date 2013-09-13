@@ -71,7 +71,30 @@ def index():
     # for url in urls:
     #     j  = judge_url.JudgeUrl(url)
     #     articles.append(j.a)
+    #################################################### Examples
+    fox_news_new_urls = ['http://www.foxnews.com/politics/2013/09/13/playing-with-us-assad-piles-on-demands-amid-chemical-weapons-talks/',
+                            'http://www.foxnews.com/weather/2013/09/13/3-dead-in-colorado-floods/',
+                            'http://www.foxnews.com/politics/2013/09/13/feds-looking-into-clinton-2008-campaign-for-links-to-dc-corruption-case/'
+                            ]
+    examples = []
+    for url in fox_news_new_urls:
+        j  = judge_url.JudgeUrl(url)
+        examples.append(j.a)
 
+    but_fox = ['http://www.foxnews.com/politics/2013/09/13/emails-show-irs-official-lerner-involved-in-tea-party-screening/']
+    but_fox_examples = []
+    for url in but_fox:
+        j  = judge_url.JudgeUrl(url)
+        but_fox_examples.append(j.a)
+
+    they_all_do_it = ['http://www.washingtontimes.com/news/2013/sep/1/john-kerry-evidence-nerve-agent-sarin-syria/?page=all#pagebreak',
+                        'http://www.nytimes.com/2013/09/13/us/politics/at-meeting-with-treasury-secretary-boehner-pressed-for-debt-ceiling-deal.html?ref=politics&pagewanted=all',
+                        'http://online.wsj.com/article/SB10001424127887323846504579071514012606076.html?mod=WSJ_MIDDLESecondStories',
+                        ]
+    all_do_it_examples = []
+    for url in they_all_do_it:
+        j  = judge_url.JudgeUrl(url)
+        all_do_it_examples.append(j.a)
     ####################################################  MySQL PART
     # con = mdb.connect('localhost', 'testuser', 'test623', 'testdb');
 
@@ -83,6 +106,9 @@ def index():
     #########################################################3
     return render_template("index.html",
         title = 'Home',
+        examples = examples,
+        but_fox_examples = but_fox_examples,
+        all_do_it_examples = all_do_it_examples,
         # articles = articles
         )
 
@@ -149,7 +175,7 @@ from flask import Markup
 def bold_words(original_text, words_to_bold):
     bolded = original_text
     for word in words_to_bold:
-        if word[2]>np.log(2):
+        if word[2]>1:
             bolded = re.sub('(?i)( '+word[3]+' )', r'**\1**', bolded)
     return bolded
 
@@ -231,7 +257,7 @@ def store_alternatives():
     bing_results = bing.search('Web',query_string,params).json() # requests 1.0+
     results = bing_results['d']['results']
     for i,result in enumerate(results):
-        if i >= 3:
+        if i >= 4:
             break
         opener = urllib2.build_opener(urllib2.HTTPCookieProcessor())
         url_alt = result['Url']
@@ -242,9 +268,9 @@ def store_alternatives():
         art = g.extract(raw_html=raw_html)
         pred, pred_prob = model.predict(raw_text=art.cleaned_text)
         alt_articles.append({'url':url_alt, 'score':int(pred_prob[0][1]*100), 'source':url_dom})
-
-        with open('alternatives.pkl', 'w') as f:
-            pickle.dump(alt_articles,f)
+    with open('alternatives.pkl', 'w') as f:
+        pickle.dump(alt_articles,f)
+    return True
  
 
 @app.route('/store_why')
@@ -257,6 +283,7 @@ def store_why():
     with open('bolded_text.pkl','w') as f:
         t=Markup(markdown.markdown(bolded_text))
         pickle.dump([t, op_words],f)
+    return True
 
 from flask import jsonify
 @app.route('/display_why')
@@ -265,3 +292,10 @@ def display_why():
         t, op_words = pickle.load(f)
         op_words.reverse()
     return jsonify({'main_text':t, 'op_words': op_words})
+
+
+@app.route('/display_alternatives')
+def display_alternatives():
+    with open('alternatives.pkl', 'r') as f:
+        alt_articles = pickle.load(f)
+    return jsonify({'aa':alt_articles})

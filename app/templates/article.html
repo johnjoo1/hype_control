@@ -2,7 +2,7 @@
 
 {% block css %}
 
-table, table th, table td {
+<!-- table, table th, table td {
     border-collapse: collapse;
     border: #888 1px solid;
     padding: 0 5px;
@@ -10,7 +10,7 @@ table, table th, table td {
 #more {
     cursor: pointer;
     background: #eee;
-}
+} -->
 
 {% endblock %}
 
@@ -22,13 +22,16 @@ table, table th, table td {
 
     <div class="span3 offset1">
       <div class="well">
-        <h3>Score: {{a.score}}</h3>
-        <br>
+        <center>
+        <span id="score">{{a.score}}</span>
+      
         <!-- <a class="btn" href="/show_why">Show me why.</a> -->
-        <a class="btn" role="button" id="display_why_button">Show me why</a>
+        <div id="display_why_button_div"><a class="btn btn-primary" role="button" id="display_why_button">Show me why</a></div>
         <div id="show_why"></div>
-        <br><br>
-        <a class="btn" href="">Find me alternatives</a>
+        <hr>
+        <div id="display_alternatives_button_div"><a class="btn btn-primary" role="button" id="display_alternatives_button">Find me alternatives</a></div>
+        <div id="show_alternatives"></div>
+      </center>
       </div>
     </div>
 
@@ -47,10 +50,21 @@ table, table th, table td {
 </div>
 
 <script>
-// Starts processing "why" and "alternatives" after the main page has loaded.
+
 $( document ).ready(function() {
-  $.get('/store_why', function(data){ 
-  console.log(status)    // computes and stores why data in a pickle file
+  var score_text = parseInt($('#score').text(), 10);
+  if (score_text<25){
+    $('#score').html("<h3 class='text-success'>Score: "+score_text+"<br>Not hyped</h3>");
+  }
+  else if (score_text>=25 && score_text<75){
+    $('#score').html("<h3 class='text-warning'>Score: "+score_text+"<br>Moderately hyped</h3>");
+  }
+  else {
+    $('#score').html("<h3 class='text-error'>Score: "+score_text+"<br>Very hyped</h3>");
+  }
+
+
+  $.get('/store_why', function(data){    // computes and stores why data in a pickle file
   });
   $.get('/store_alternatives', function(data){      // computes and stores alternatives data in a pickle file
   });
@@ -59,57 +73,71 @@ $( document ).ready(function() {
 
 // Displays the "why" word table in a bootstrap table with button click AND changes the main text to bold opinion words
 $("#display_why_button").click(function () {
+  $('#display_why_button_div').html('<img src="static/img/484.gif" alt="Loading...">')
   $.get("/display_why", function(data) {        // gets the data
-
     $("#main_text").html(data['main_text']);        // bolds the opinion words in the main text
 
-    var table_html='<br> <table class="table table-condensed"><thead><tr><td>Weight</td> <td>Word</td> <td>count</td> </tr></thead>';    // creates the word table
+    var table_html='<br> <table class="table table-condensed"><thead><tr><td>Opinion<br>score</td> <td>Word</td> </tr></thead>';    // creates the word table
     table_html+='<tbody>';
     $.each(data['op_words'], function(i, value){
       if (i<100){
-      table_html+='<tr><td>'+value[2]+'</td><td>'+value[3]+'</td><td>'+value[1]+'</td></tr>';
+      table_html+='<tr><td>'+value[2]+'</td><td>'+value[3]+'</td></tr>';
       }else{
         table_html+='</tbody></table>';
         return false;
       }
     });
-
+  $('#display_why_button_div').html('')
   $('#show_why').html(table_html);
 
-//
-var numShown = 5; // Initial rows shown & index
-var numMore = 5;  // Increment
+// // Add 5 more rows  ////////////////////////////
+  var numShown = 5; // Initial rows shown & index
+  var numMore = 5;  // Increment
 
-var $table = $('table').find('tbody');  // tbody containing all the rows
-var numRows = $table.find('tr').length; // Total # rows
+  var $table = $('table').find('tbody');  // tbody containing all the rows
+  var numRows = $table.find('tr').length; // Total # rows
 
-// $(function () {
-    // Hide rows and add clickable div
-    $table.find('tr:gt(' + (numShown - 1) + ')').hide().end()
-        .after('<tbody id="more"><tr><td colspan="' +
-               $table.find('tr:first td').length + '"><div>Show <span>' +
-               numMore + '</span> More</div</tbody></td></tr>');
+  // Hide rows and add clickable div
+  $table.find('tr:gt(' + (numShown - 1) + ')').hide().end()
+      .after('<tbody id="more"><tr><td colspan="' +
+             $table.find('tr:first td').length + '"><div>Show <span>' +
+             numMore + '</span> More</div</tbody></td></tr>');
 
-    $('#more').click(function() {
-        numShown = numShown + numMore;
-        // no more "show more" if done
-        if (numShown >= numRows) {
-            $('#more').remove();
-        }
-        // change rows remaining if less than increment
-        if (numRows - numShown < numMore) {
-            $('#more span').html(numRows - numShown);
-        }
-        $table.find('tr:lt(' + numShown + ')').show();
+  $('#more').click(function() {
+      numShown = numShown + numMore;
+      // no more "show more" if done
+      if (numShown >= numRows) {
+          $('#more').remove();
+      }
+      // change rows remaining if less than increment
+      if (numRows - numShown < numMore) {
+          $('#more span').html(numRows - numShown);
+      }
+      $table.find('tr:lt(' + numShown + ')').show();
     });
-
-// });
-//
-
+// // /////////////////////////
   });
 });
 
-
+// //////////////////////////////////
+// Displays the "alternatives"
+$("#display_alternatives_button").click(function () {
+  $('#display_alternatives_button_div').html('<img src="static/img/484.gif" alt="Loading...">')
+  $.get("/display_alternatives", function(data) {        // gets the data
+    var table_html='<br> <table class="table table-condensed"><thead><tr><td>Score</td> <td>Source</td> </tr></thead>';    // creates the word table
+    table_html+='<tbody>';
+    $.each(data['aa'], function(i, value){
+      if (i<100){
+      table_html+='<tr><td>'+value['score']+'</td><td><a href="'+value['url']+'">'+value['source']+'</a></td></tr>';
+      }else{
+        table_html+='</tbody></table>';
+        return false;
+      }
+    });
+  $('#display_alternatives_button_div').html('')
+  $('#show_alternatives').html(table_html);
+  });
+});
 
 
 // function bold_main_text(){

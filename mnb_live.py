@@ -148,17 +148,19 @@ class Model(object):
 		train_text, test_text, train_target, test_target = self.prepare_train_and_test_sets()
 
 		self.vectorizer = TfidfVectorizer(encoding='latin1', stop_words = nltk.corpus.stopwords.words('english'))
+		# self.count_vectorizer = CountVectorizer(encoding='latin1', stop_words = nltk.corpus.stopwords.words('english'))
 
 		##This is new an untested
-		count_vectorizer = CountVectorizer(encoding='latin1', min_df=1)
-		transformer = TfidfTransformer()
+		# count_vectorizer = CountVectorizer(encoding='latin1', min_df=1)
+		# transformer = TfidfTransformer()
 
-		C_train = count_vectorizer.fit_transform((text for text in train_text))
-		tfidf = transformer.fit_transform(C_train.toarray())
-		self.weights=transformer.idf_ 
+		# C_train = count_vectorizer.fit_transform((text for text in train_text))
+		# tfidf = transformer.fit_transform(C_train.toarray())
+		# self.weights=transformer.idf_ 
 		###############
 		X_train = self.vectorizer.fit_transform((text for text in train_text))
 		assert sp.issparse(X_train)
+		# self.count_vectorizer.fit_transform((text for text in train_text))
 		y_train = train_target 
 
 		X_test = self.vectorizer.transform((text for text in test_text))
@@ -238,13 +240,14 @@ class Model(object):
 
 	def why_opinion_faster(self):
 		opinion_words = []
-		ratio = self.clf.feature_log_prob_[1]-self.clf.feature_log_prob_[0]
-		opinion_words = [ ( round(count*np.exp(ratio[i]),2) ,
+		ratio = np.exp(self.clf.feature_log_prob_[1]-self.clf.feature_log_prob_[0])
+		opinion_words = [ ( 0, #round(count*np.exp(ratio[i]),2) ,
 							round(count,2) , 
-							round(ratio[i],2) , 
+							round(ratio[i],0) , 
 							self.vectorizer.get_feature_names()[i] ) for i,count in enumerate(self.vect.toarray()[0]) if count>0]
 		opinion_words_sorted = sorted(opinion_words, key=lambda x:x[2])
-		opinion_words_sorted=[word for word in opinion_words_sorted if word[2]>np.log(2)]
+		opinion_words_sorted=[word for word in opinion_words_sorted if word[2]>1]
+		print opinion_words_sorted
 		return opinion_words_sorted #, news_words_sorted
 
 if __name__ == "__main__":
@@ -252,7 +255,7 @@ if __name__ == "__main__":
 	m.reload_raw_data()
 	train_text, test_text, train_target, test_target = m.prepare_train_and_test_sets()
 	m.train()
-	pred, pred_prob = m.predict(fname="./sample_texts/news/washington_times.txt")
+	pred, pred_prob = m.predict(fname="./sample_texts/nature.txt")
 	# opinion_words, news_words = m.why_opinion()
-	opinion_words = m.why_opinion()
+	opinion_words = m.why_opinion_faster()
 ##  What words make the certain article that way?  From words, select the top 10 most impactful words.

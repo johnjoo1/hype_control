@@ -20,6 +20,7 @@ class JudgeUrl(object):
 		g = goose.Goose()
 		self.a = g.extract(raw_html=raw_html)
 		self.a.url = url
+		self.a.url_dom = url.split('/')[2]
 
 	def evaluate_article(self):
 		pred, pred_prob = self.model.predict(raw_text=self.a.cleaned_text)

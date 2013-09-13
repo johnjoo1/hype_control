@@ -25,8 +25,67 @@
 			<!-- <hr> -->
 			</center>
 		</div>
+		
+
+		<div class="well">
+			<h3>Examples</h3>
+			<h5>Fox News news articles are in general not hyped...</h5>
+			<table class="table table-condensed well">
+				<thead>
+					<tr><td>Hype<br>score</td> <td>Headline</td> <td>Source</td> </tr>
+				</thead>
+				<tbody>
+					{% for example in examples %}
+					<tr>
+						<td align="right">{{example.score}}</td>
+						<td><a href="/article?request_url={{example.url}}">{{example.title}}</a></td>
+						<td>{{example.url_dom}}</td>
+						<td></td>	
+					</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+
+			<h5>... but not always.  Occassionally, there are VERY hyped articles.</h5>
+			<table class="table table-condensed well">
+				<thead>
+					<tr><td>Hype<br>score</td> <td>Headline</td> <td>Source</td> </tr>
+				</thead>
+				<tbody>
+					{% for example in but_fox_examples %}
+					<tr>
+						<td align="right">{{example.score}}</td>
+						<td><a href="/article?request_url={{example.url}}">{{example.title}}</a></td>
+						<td>{{example.url_dom}}</td>
+						<td></td>	
+					</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+
+			<h5>Everyone adds some extra hype in their some of their articles.</h5>
+			<table class="table table-condensed well">
+				<thead>
+					<tr><td>Hype<br>score</td> <td>Headline</td> <td>Source</td> </tr>
+				</thead>
+				<tbody>
+					{% for example in all_do_it_examples %}
+					<tr>
+						<td align="right">{{example.score}}</td>
+						<td><a href="/article?request_url={{example.url}}">{{example.title}}</a></td>
+						<td>{{example.url_dom}}</td>
+						<td></td>	
+					</tr>
+					{% endfor %}
+				</tbody>
+			</table>			
+
+		</div>
 	</div>
 </div>
+
+
+
 
 <!-- <h4>Today's Top Stories</h4>
 
