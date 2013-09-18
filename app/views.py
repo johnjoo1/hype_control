@@ -13,6 +13,9 @@ from flask import request
 import judge_url
 import numpy as np
 import pickle
+import nltk
+from sklearn.feature_extraction.text import TfidfTransformer
+from sklearn.feature_extraction.text import CountVectorizer
 
 # model = mnb_live.Model()
 # model.reload_raw_data()
@@ -290,21 +293,55 @@ def store_alternatives():
         art = g.extract(raw_html=raw_html)
         # pred, pred_prob = model.predict(raw_text=art.cleaned_text)
         j = judge_url.JudgeUrl('')
-        pred_prob = j.evaluate_raw_tex(art.cleaned_text)
+        pred_prob = j.evaluate_raw_text(art.cleaned_text)
         alt_articles.append({'url':url_alt, 'score':int(pred_prob[0][1]*100), 'source':url_dom})
     with open('alternatives.pkl', 'w') as f:
         pickle.dump(alt_articles,f)
     return True
- 
+
 
 @app.route('/store_why')
 def store_why():
     print 'store why is starting'
     # op_words = model.why_opinion_faster()
-    op_sents = model.rank_sents()   
-    print op_sents
+    # op_sents = model.rank_sents()   
+    with open('trained_objects.pkl', 'r') as p:
+            [feature_log_prob, intercept, training_word_list, training_counts] = pickle.load(p)
     with open('temp_cleaned_text.pkl', 'r') as f:
-        [cleaned_text, title] = pickle.load(f)
+        [cleaned_text, title, search_string] = pickle.load(f)
+    tfidf_transformer = TfidfTransformer()
+    tfidf_training = tfidf_transformer.fit_transform(training_counts.toarray())
+    count_vectorizer_sample = CountVectorizer(encoding=u'utf-8', stop_words = nltk.corpus.stopwords.words('english'))
+
+
+    choice1_logs = []
+    sent_tokenizer=nltk.data.load('tokenizers/punkt/english.pickle')
+    sents =sent_tokenizer.tokenize( cleaned_text)
+    for sent in sents:
+        try:
+            counts_sample = count_vectorizer_sample.fit_transform([sent]).toarray()[0]
+        except ValueError:
+            continue
+        tokens_sample = count_vectorizer_sample.get_feature_names()
+        counts_in_context = np.zeros(len(training_word_list)) #initialize zero array for all the words in document corpus
+        for i, word in enumerate(tokens_sample):
+            try:
+                idx = training_word_list.index(word)
+                counts_in_context[idx] = counts_sample[i]
+            except ValueError:
+                pass        
+        ## Convert counts_in_context to tfidf
+        tfidf_sample = tfidf_transformer.transform((counts_in_context)).toarray()[0]
+        log_score = (sum(feature_log_prob[1]*tfidf_sample)+intercept)/sum(tfidf_sample)
+        if log_score <-99:
+            continue
+        choice1_logs.append([log_score[0], sent])
+    s_choice1_logs = sorted(choice1_logs, key = lambda x:x[0])
+    s_choice1_logs.reverse()
+    op_sents = s_choice1_logs
+
+    print op_sents
+
     bolded_text = bold_sents(cleaned_text, op_sents)
     print bolded_text
     with open('bolded_text.pkl','w') as f:
