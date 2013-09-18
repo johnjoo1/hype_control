@@ -14,10 +14,16 @@ import judge_url
 import numpy as np
 import pickle
 
-model = mnb_live.Model()
-model.reload_raw_data()
-train_text, test_text, train_target, test_target = model.prepare_train_and_test_sets()
-model.train()
+# model = mnb_live.Model()
+# model.reload_raw_data()
+# train_text, test_text, train_target, test_target = model.prepare_train_and_test_sets()
+# model.train()
+
+# with open('trained_objects.pkl') as f:
+#     m_list = pickle.load(f)
+# model = m_list[0]
+
+
 # def get_top_news_urls(BASE = 'http://www.nytimes.com', limit = 5):
 #     def request_url(url, txdata, txheaders):
 #         """Gets a webpage's HTML."""
@@ -72,29 +78,32 @@ def index():
     #     j  = judge_url.JudgeUrl(url)
     #     articles.append(j.a)
     #################################################### Examples
-    fox_news_new_urls = ['http://www.foxnews.com/politics/2013/09/13/playing-with-us-assad-piles-on-demands-amid-chemical-weapons-talks/',
-                            'http://www.foxnews.com/weather/2013/09/13/3-dead-in-colorado-floods/',
-                            'http://www.foxnews.com/politics/2013/09/13/feds-looking-into-clinton-2008-campaign-for-links-to-dc-corruption-case/'
+    example_urls = ['http://www.nytimes.com/2013/09/11/opinion/friedman-threaten-to-threaten.html?_r=0',
+                        'http://www.nytimes.com/2013/09/17/world/europe/us-and-allies-tell-syria-to-dismantle-chemical-arms-quickly.html?ref=world'
                             ]
+
+    # possible_examples = ['http://nypost.com/2013/09/15/obamacare-will-question-your-sex-life/',
+    #                         'http://www.dailykos.com/story/2013/04/26/1204994/-Bush-will-go-down-in-history-as-person-who-doomed-the-planet',
+    #                         ]
     examples = []
-    for url in fox_news_new_urls:
+    for url in example_urls:
         j  = judge_url.JudgeUrl(url)
         examples.append(j.a)
 
-    but_fox = ['http://www.foxnews.com/politics/2013/09/13/emails-show-irs-official-lerner-involved-in-tea-party-screening/']
-    but_fox_examples = []
-    for url in but_fox:
-        j  = judge_url.JudgeUrl(url)
-        but_fox_examples.append(j.a)
+    # but_fox = ['http://www.foxnews.com/politics/2013/09/13/emails-show-irs-official-lerner-involved-in-tea-party-screening/']
+    # but_fox_examples = []
+    # for url in but_fox:
+    #     j  = judge_url.JudgeUrl(url)
+    #     but_fox_examples.append(j.a)
 
-    they_all_do_it = ['http://www.washingtontimes.com/news/2013/sep/1/john-kerry-evidence-nerve-agent-sarin-syria/?page=all#pagebreak',
-                        'http://www.nytimes.com/2013/09/13/us/politics/at-meeting-with-treasury-secretary-boehner-pressed-for-debt-ceiling-deal.html?ref=politics&pagewanted=all',
-                        'http://online.wsj.com/article/SB10001424127887323846504579071514012606076.html?mod=WSJ_MIDDLESecondStories',
-                        ]
-    all_do_it_examples = []
-    for url in they_all_do_it:
-        j  = judge_url.JudgeUrl(url)
-        all_do_it_examples.append(j.a)
+    # they_all_do_it = ['http://www.washingtontimes.com/news/2013/sep/1/john-kerry-evidence-nerve-agent-sarin-syria/?page=all#pagebreak',
+    #                     'http://www.nytimes.com/2013/09/13/us/politics/at-meeting-with-treasury-secretary-boehner-pressed-for-debt-ceiling-deal.html?ref=politics&pagewanted=all',
+    #                     'http://online.wsj.com/article/SB10001424127887323846504579071514012606076.html?mod=WSJ_MIDDLESecondStories',
+    #                     ]
+    # all_do_it_examples = []
+    # for url in they_all_do_it:
+    #     j  = judge_url.JudgeUrl(url)
+    #     all_do_it_examples.append(j.a)
     ####################################################  MySQL PART
     # con = mdb.connect('localhost', 'testuser', 'test623', 'testdb');
 
@@ -107,8 +116,8 @@ def index():
     return render_template("index.html",
         title = 'Home',
         examples = examples,
-        but_fox_examples = but_fox_examples,
-        all_do_it_examples = all_do_it_examples,
+        # but_fox_examples = but_fox_examples,
+        # all_do_it_examples = all_do_it_examples,
         # articles = articles
         )
 
@@ -179,6 +188,17 @@ def bold_words(original_text, words_to_bold):
             bolded = re.sub('(?i)( '+word[3]+' )', r'**\1**', bolded)
     return bolded
 
+def bold_sents(original_text, sent_to_bold):
+    bolded = original_text
+    for sent in sent_to_bold:
+        if sent[0]>-9:
+            if sent[1].startswith('"\n\n'):
+                bolded = bolded.replace(sent[1].lstrip('"\n'), '**'+sent[1].lstrip('"\n')+'**')
+            else:
+                bolded = bolded.replace(sent[1], '**'+sent[1]+'**')
+    return bolded
+
+
 
 @app.route('/article')
 def article():
@@ -197,7 +217,9 @@ def article():
     a.html_text = Markup(markdown.markdown(a.cleaned_text))
     print 'scrape: '+str(time.time()-stime)
 
-    pred, pred_prob = model.predict(raw_text=a.cleaned_text)
+    # pred, pred_prob = model.predict(raw_text=a.cleaned_text)
+    j = judge_url.JudgeUrl('')
+    pred_prob = j.evaluate_raw_text(a.cleaned_text)
     a.score = int(pred_prob[0][1]*100.)
 
     # stime=time.time()
@@ -207,17 +229,17 @@ def article():
     # a.html_text = Markup(markdown.markdown(bolded_text))
 
 
-    stime=time.time()
-    my_key = "vknjCZkZel4gofUWhubpLS0pXUXLbD5VqzIFgkXUHCg="
-    query_string = '"'+a.title+'"'
-    bing = BingSearchAPI(my_key)
-    params = {
-            # 'ImageFilters':'"Face:Face"',
-            #   '$format': 'json',
-            #   '$top': 10,
-            #   '$skip': 0
-              }
-    alt_articles=[]       
+    # stime=time.time()
+    # my_key = "vknjCZkZel4gofUWhubpLS0pXUXLbD5VqzIFgkXUHCg="
+    # query_string = '"'+j.search_string+'"'
+    # bing = BingSearchAPI(my_key)
+    # params = {
+    #         # 'ImageFilters':'"Face:Face"',
+    #         #   '$format': 'json',
+    #         #   '$top': 10,
+    #         #   '$skip': 0
+    #           }
+    # alt_articles=[]       
     # bing_results = bing.search('Web',query_string,params).json() # requests 1.0+
     # results = bing_results['d']['results']
     # for i,result in enumerate(results):
@@ -234,22 +256,22 @@ def article():
     #     alt_articles.append({'url':url_alt, 'score':int(pred_prob[0][1]*100), 'source':url_dom})
     # print 'bing and predict: '+str(time.time()-stime)
     with open('temp_cleaned_text.pkl', 'w') as f:
-        pickle.dump([a.cleaned_text, a.title],f)
+        pickle.dump([a.cleaned_text, a.title, j.search_string],f)
 
     return render_template("article.html",
         url=url,
         a=a,
-        alt_articles = alt_articles, 
+        # alt_articles = alt_articles, 
         main_text = a.html_text
         )
 
 @app.route('/store_alternatives')
 def store_alternatives():
     with open('temp_cleaned_text.pkl', 'r') as f:
-        [cleaned_text, title] = pickle.load(f)
+        [cleaned_text, title, search_string] = pickle.load(f)
 
     my_key = "vknjCZkZel4gofUWhubpLS0pXUXLbD5VqzIFgkXUHCg="
-    query_string = '"'+title+'"'
+    query_string = '"'+search_string+'"'
     bing = BingSearchAPI(my_key)
     params = {
               }
@@ -266,7 +288,9 @@ def store_alternatives():
         raw_html = response.read()
         g = goose.Goose()
         art = g.extract(raw_html=raw_html)
-        pred, pred_prob = model.predict(raw_text=art.cleaned_text)
+        # pred, pred_prob = model.predict(raw_text=art.cleaned_text)
+        j = judge_url.JudgeUrl('')
+        pred_prob = j.evaluate_raw_tex(art.cleaned_text)
         alt_articles.append({'url':url_alt, 'score':int(pred_prob[0][1]*100), 'source':url_dom})
     with open('alternatives.pkl', 'w') as f:
         pickle.dump(alt_articles,f)
@@ -276,22 +300,32 @@ def store_alternatives():
 @app.route('/store_why')
 def store_why():
     print 'store why is starting'
-    op_words = model.why_opinion_faster()   
+    # op_words = model.why_opinion_faster()
+    op_sents = model.rank_sents()   
+    print op_sents
     with open('temp_cleaned_text.pkl', 'r') as f:
         [cleaned_text, title] = pickle.load(f)
-    bolded_text = bold_words(cleaned_text, op_words)
+    bolded_text = bold_sents(cleaned_text, op_sents)
+    print bolded_text
     with open('bolded_text.pkl','w') as f:
         t=Markup(markdown.markdown(bolded_text))
-        pickle.dump([t, op_words],f)
+        pickle.dump([t, op_sents],f)
     return True
 
 from flask import jsonify
 @app.route('/display_why')
 def display_why():
+    ## for words
+    # with open('bolded_text.pkl', 'r') as f:
+    #     t, op_words = pickle.load(f)
+    #     op_words.reverse()
+    # return jsonify({'main_text':t, 'op_words': op_words})
+
+    ## for sentences
     with open('bolded_text.pkl', 'r') as f:
-        t, op_words = pickle.load(f)
-        op_words.reverse()
-    return jsonify({'main_text':t, 'op_words': op_words})
+        t, op_sents = pickle.load(f)
+        op_sents.reverse()
+    return jsonify({'main_text':t, 'op_sents': op_sents})
 
 
 @app.route('/display_alternatives')

@@ -77,44 +77,44 @@ $("#display_why_button").click(function () {
   $.get("/display_why", function(data) {        // gets the data
     $("#main_text").html(data['main_text']);        // bolds the opinion words in the main text
 
-    var table_html='<br> <table class="table table-condensed"><thead><tr><td>Opinion<br>score</td> <td>Word</td> </tr></thead>';    // creates the word table
-    table_html+='<tbody>';
-    $.each(data['op_words'], function(i, value){
-      if (i<100){
-      table_html+='<tr><td>'+value[2]+'</td><td>'+value[3]+'</td></tr>';
-      }else{
-        table_html+='</tbody></table>';
-        return false;
-      }
-    });
+//     var table_html='<br> <table class="table table-condensed"><thead><tr><td>Opinion<br>score</td> <td>Word</td> </tr></thead>';    // creates the word table
+//     table_html+='<tbody>';
+//     $.each(data['op_words'], function(i, value){
+//       if (i<100){
+//       table_html+='<tr><td>'+value[2]+'</td><td>'+value[3]+'</td></tr>';
+//       }else{
+//         table_html+='</tbody></table>';
+//         return false;
+//       }
+//     });
   $('#display_why_button_div').html('')
-  $('#show_why').html(table_html);
+//   $('#show_why').html(table_html);
 
-// // Add 5 more rows  ////////////////////////////
-  var numShown = 5; // Initial rows shown & index
-  var numMore = 5;  // Increment
+// // // Add 5 more rows  ////////////////////////////
+//   var numShown = 5; // Initial rows shown & index
+//   var numMore = 5;  // Increment
 
-  var $table = $('table').find('tbody');  // tbody containing all the rows
-  var numRows = $table.find('tr').length; // Total # rows
+//   var $table = $('table').find('tbody');  // tbody containing all the rows
+//   var numRows = $table.find('tr').length; // Total # rows
 
-  // Hide rows and add clickable div
-  $table.find('tr:gt(' + (numShown - 1) + ')').hide().end()
-      .after('<tbody id="more"><tr><td colspan="' +
-             $table.find('tr:first td').length + '"><div>Show <span>' +
-             numMore + '</span> More</div</tbody></td></tr>');
+//   // Hide rows and add clickable div
+//   $table.find('tr:gt(' + (numShown - 1) + ')').hide().end()
+//       .after('<tbody id="more"><tr><td colspan="' +
+//              $table.find('tr:first td').length + '"><div>Show <span>' +
+//              numMore + '</span> More</div</tbody></td></tr>');
 
-  $('#more').click(function() {
-      numShown = numShown + numMore;
-      // no more "show more" if done
-      if (numShown >= numRows) {
-          $('#more').remove();
-      }
-      // change rows remaining if less than increment
-      if (numRows - numShown < numMore) {
-          $('#more span').html(numRows - numShown);
-      }
-      $table.find('tr:lt(' + numShown + ')').show();
-    });
+//   $('#more').click(function() {
+//       numShown = numShown + numMore;
+//       // no more "show more" if done
+//       if (numShown >= numRows) {
+//           $('#more').remove();
+//       }
+//       // change rows remaining if less than increment
+//       if (numRows - numShown < numMore) {
+//           $('#more span').html(numRows - numShown);
+//       }
+//       $table.find('tr:lt(' + numShown + ')').show();
+//     });
 // // /////////////////////////
   });
 });

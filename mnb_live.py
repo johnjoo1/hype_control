@@ -7,6 +7,7 @@ import pylab as pl
 import nltk
 import sys
 import pickle
+import time
 
 from sklearn.datasets import load_mlcomp
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -72,13 +73,28 @@ class Model(object):
 
 	def reload_raw_data(self, pickle_flag=False):
 		tw = TextWrangle()
-		text_list_news_dom, target_news_dom = tw.list_article_text('./training_set/reuters_domestic_stories.txt',0)
-		text_list_news_world, target_news_world = tw.list_article_text('./training_set/reuters_world_stories.txt',0)
+		## original training set
+		# text_list_news_dom, target_news_dom = tw.list_article_text('./training_set/reuters_domestic_stories.txt',0)
+		# text_list_news_world, target_news_world = tw.list_article_text('./training_set/reuters_world_stories.txt',0)
+
+		## longer_training_set
+		text_list_news_dom, target_news_dom = tw.list_article_text('./longer_training_set/reuters_domestic_stories.txt',0)
+		text_list_news_world, target_news_world = tw.list_article_text('./longer_training_set/reuters_world_stories.txt',0)
 
 		text_list_news = tw.merge_txt_lists([text_list_news_dom, text_list_news_world])
 		target_news = list(np.zeros(len(text_list_news)))
 
-		text_list_opinion, target_opinion = tw.list_article_text('./training_set/foxnews_opinion.txt',1)
+		##original training set
+		# text_list_opinion, target_opinion = tw.list_article_text('./training_set/foxnews_opinion.txt',1)
+
+		##longer training set
+		text_list_fox_opinion, target_fox_opinion = tw.list_article_text('./longer_training_set/foxnews_opinion.txt',1)
+		text_list_nyt_opinion, target_nyt_opinion = tw.list_article_text('./longer_training_set/nytimes_opinion1.txt',1)
+		self.text_list_fox_opinion = text_list_fox_opinion
+		self.text_list_nyt_opinion = text_list_nyt_opinion
+
+		text_list_opinion = tw.merge_txt_lists([text_list_fox_opinion, text_list_nyt_opinion])
+		target_opinion = list(np.ones(len(text_list_opinion)))
 
 		self.text_list_news_dom, self.target_news_dom, self.text_list_news_world, \
 			self.target_news_world, self.text_list_news, self.target_news, self.text_list_opinion, self.target_opinion =\
@@ -117,6 +133,7 @@ class Model(object):
 	def separate_train_test_set(self, text_lists, targets_lists, train_proportion = .75):
 		## MUST EQUALIZE LENGTH OF LISTS BEFORE THIS STEP
 		num_train = int(len(text_lists[0])*train_proportion)
+
 		train_text = []
 		train_target = []
 		test_text = []
@@ -129,7 +146,7 @@ class Model(object):
 			test_target += targets_list[num_train:]
 		return train_text, test_text, train_target, test_target
 
-	def prepare_train_and_test_sets(self, shuffle_flag=False):
+	def prepare_train_and_test_sets(self, shuffle_flag=True):
 		if shuffle_flag:
 			text_list_news, target_news = self.zip_shuffle_unzip(self.text_list_news, self.target_news)
 			text_list_opinion, target_opinion = self.zip_shuffle_unzip(self.text_list_opinion, self.target_opinion)
@@ -146,9 +163,10 @@ class Model(object):
 
 	def train(self):
 		train_text, test_text, train_target, test_target = self.prepare_train_and_test_sets()
+		self.train_text, self.test_text, self.train_target, self.test_target = train_text, test_text, train_target, test_target
 
-		self.vectorizer = TfidfVectorizer(encoding='latin1', stop_words = nltk.corpus.stopwords.words('english'))
-		# self.count_vectorizer = CountVectorizer(encoding='latin1', stop_words = nltk.corpus.stopwords.words('english'))
+		self.vectorizer = TfidfVectorizer(encoding=u'utf-8', stop_words = nltk.corpus.stopwords.words('english'))
+		# self.vectorizer = CountVectorizer(encoding='latin1', stop_words = nltk.corpus.stopwords.words('english'))
 
 		##This is new an untested
 		# count_vectorizer = CountVectorizer(encoding='latin1', min_df=1)
@@ -158,38 +176,39 @@ class Model(object):
 		# tfidf = transformer.fit_transform(C_train.toarray())
 		# self.weights=transformer.idf_ 
 		###############
-		X_train = self.vectorizer.fit_transform((text for text in train_text))
-		assert sp.issparse(X_train)
-		# self.count_vectorizer.fit_transform((text for text in train_text))
-		y_train = train_target 
+		self.X_train = self.vectorizer.fit_transform((text for text in train_text))
+		assert sp.issparse(self.X_train)
 
-		X_test = self.vectorizer.transform((text for text in test_text))
-		y_test = test_target
+		# self.count_vectorizer.fit_transform((text for text in train_text))
+		self.y_train = train_target 
+
+		self.X_test = self.vectorizer.transform((text for text in test_text))
+		self.y_test = test_target
 
 		parameters={'alpha': 0.01}
-		self.clf = MultinomialNB(**parameters).fit(X_train, y_train)
+		self.clf = MultinomialNB(**parameters).fit(self.X_train, self.y_train)
 
 	def benchmark(self, clf_class=MultinomialNB, params={'alpha': 0.01}, name='MultinomialNB'):
 	    print("parameters:", params)
-	    t0 = time()
-	    clf = clf_class(**params).fit(X_train, y_train)
-	    print("done in %fs" % (time() - t0))
+	    t0 = time.time()
+	    clf = clf_class(**params).fit(self.X_train, self.y_train)
+	    print("done in %fs" % (time.time() - t0))
 
 	    if hasattr(clf, 'coef_'):
 	        print("Percentage of non zeros coef: %f"
 	              % (np.mean(clf.coef_ != 0) * 100))
 	    print("Predicting the outcomes of the testing set")
-	    t0 = time()
-	    pred = clf.predict(X_test)
-	    print("done in %fs" % (time() - t0))
+	    t0 = time.time()
+	    pred = clf.predict(self.X_test)
+	    print("done in %fs" % (time.time() - t0))
 
 	    print("Classification report on test set for classifier:")
 	    print(clf)
 	    print()
-	    print(classification_report(y_test, pred,
+	    print(classification_report(self.y_test, pred,
 	                                target_names=['news','opinion']))
 
-	    cm = confusion_matrix(y_test, pred)
+	    cm = confusion_matrix(self.y_test, pred)
 	    print("Confusion matrix:")
 	    print(cm)
 
@@ -247,15 +266,41 @@ class Model(object):
 							self.vectorizer.get_feature_names()[i] ) for i,count in enumerate(self.vect.toarray()[0]) if count>0]
 		opinion_words_sorted = sorted(opinion_words, key=lambda x:x[2])
 		opinion_words_sorted=[word for word in opinion_words_sorted if word[2]>1]
-		print opinion_words_sorted
+		# print opinion_words_sorted
 		return opinion_words_sorted #, news_words_sorted
+
+
+	def rank_sents(self):
+	    sent_tokenizer=nltk.data.load('tokenizers/punkt/english.pickle')
+	    sents =sent_tokenizer.tokenize( self.a_text)
+	    choice1_logs = []
+	    for sent in sents:
+	        vt=self.vectorizer.transform([sent])
+	        log_score = (sum(self.clf.feature_log_prob_[1]*vt.toarray()[0])+self.clf.intercept_)/sum(vt.toarray()[0])
+	        if log_score <-99:
+	        	continue
+	        choice1_logs.append([log_score[0], sent])
+	    s_choice1_logs = sorted(choice1_logs, key = lambda x:x[0])
+	    s_choice1_logs.reverse()
+	    return s_choice1_logs
 
 if __name__ == "__main__":
 	m=Model()
 	m.reload_raw_data()
 	train_text, test_text, train_target, test_target = m.prepare_train_and_test_sets()
 	m.train()
-	pred, pred_prob = m.predict(fname="./sample_texts/nature.txt")
+
+	####  Store important results from the training  ##########################
+	# count_vectorizer = CountVectorizer(encoding=u'utf-8', stop_words = nltk.corpus.stopwords.words('english'))
+	# training_counts = count_vectorizer.fit_transform((text for text in m.train_text))  ## store this!
+	# assert(tfidf_vectorizer.get_feature_names() == tfidf_vectorizer.get_feature_names() ) #make sure word order is same
+	# training_word_list = count_vectorizer.get_feature_names()  ## store this!
+
+	# with open('trained_objects.pkl', 'wb') as p:
+	# 	pickle.dump([m.clf.feature_log_prob_, m.clf.intercept_, training_word_list, training_counts], p)
+	############################################################################
+
+	pred, pred_prob = m.predict(fname="./sample_texts/news/fox_news.txt")
 	# opinion_words, news_words = m.why_opinion()
 	opinion_words = m.why_opinion_faster()
 ##  What words make the certain article that way?  From words, select the top 10 most impactful words.

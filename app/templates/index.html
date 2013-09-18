@@ -29,24 +29,29 @@
 
 		<div class="well">
 			<h3>Examples</h3>
-			<h5>Fox News news articles are in general not hyped...</h5>
-			<table class="table table-condensed well">
+			<h5>We can accurately classify news articles from opinion articles.</h5>
+			<table class="table well">
 				<thead>
-					<tr><td>Hype<br>score</td> <td>Headline</td> <td>Source</td> </tr>
+					<tr> <td>Article Type</td> <td>Hype score</td> <td>Headline</td> </tr>
 				</thead>
 				<tbody>
-					{% for example in examples %}
+
 					<tr>
-						<td align="right">{{example.score}}</td>
-						<td><a href="/article?request_url={{example.url}}">{{example.title}}</a></td>
-						<td>{{example.url_dom}}</td>
+						<td>Opinion</td>
+						<td align="right">{{examples[0].score}}</td>
+						<td><a href="/article?request_url={{examples[0].url}}">{{examples[0].title}}</a></td>
 						<td></td>	
 					</tr>
-					{% endfor %}
+					<tr>
+						<td>News</td>
+						<td align="right">{{examples[1].score}}</td>
+						<td><a href="/article?request_url={{examples[1].url}}">{{examples[1].title}}</a></td>
+						<td></td>	
+					</tr>
 				</tbody>
 			</table>
 
-			<h5>... but not always.  Occassionally, there are VERY hyped articles.</h5>
+			<!-- <h5>... but not always.  Occassionally, there are VERY hyped articles.</h5>
 			<table class="table table-condensed well">
 				<thead>
 					<tr><td>Hype<br>score</td> <td>Headline</td> <td>Source</td> </tr>
@@ -61,9 +66,9 @@
 					</tr>
 					{% endfor %}
 				</tbody>
-			</table>
+			</table> -->
 
-			<h5>Everyone adds some extra hype in their some of their articles.</h5>
+			<!-- <h5>Everyone adds some extra hype in their some of their articles.</h5>
 			<table class="table table-condensed well">
 				<thead>
 					<tr><td>Hype<br>score</td> <td>Headline</td> <td>Source</td> </tr>
@@ -78,7 +83,7 @@
 					</tr>
 					{% endfor %}
 				</tbody>
-			</table>			
+			</table>	 -->		
 
 		</div>
 	</div>
