@@ -270,19 +270,7 @@ class Model(object):
 		return opinion_words_sorted #, news_words_sorted
 
 
-	def rank_sents(self):
-	    sent_tokenizer=nltk.data.load('tokenizers/punkt/english.pickle')
-	    sents =sent_tokenizer.tokenize( self.a_text)
-	    choice1_logs = []
-	    for sent in sents:
-	        vt=self.vectorizer.transform([sent])
-	        log_score = (sum(self.clf.feature_log_prob_[1]*vt.toarray()[0])+self.clf.intercept_)/sum(vt.toarray()[0])
-	        if log_score <-99:
-	        	continue
-	        choice1_logs.append([log_score[0], sent])
-	    s_choice1_logs = sorted(choice1_logs, key = lambda x:x[0])
-	    s_choice1_logs.reverse()
-	    return s_choice1_logs
+
 
 if __name__ == "__main__":
 	m=Model()

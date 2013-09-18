@@ -275,14 +275,15 @@ def store_alternatives():
 
     my_key = "vknjCZkZel4gofUWhubpLS0pXUXLbD5VqzIFgkXUHCg="
     query_string = '"'+search_string+'"'
+    print search_string
     bing = BingSearchAPI(my_key)
     params = {
               }
     alt_articles=[]       
-    bing_results = bing.search('Web',query_string,params).json() # requests 1.0+
+    bing_results = bing.search('News',query_string,params).json() # requests 1.0+
     results = bing_results['d']['results']
     for i,result in enumerate(results):
-        if i >= 4:
+        if i >= 5:
             break
         opener = urllib2.build_opener(urllib2.HTTPCookieProcessor())
         url_alt = result['Url']
@@ -295,6 +296,7 @@ def store_alternatives():
         j = judge_url.JudgeUrl('')
         pred_prob = j.evaluate_raw_text(art.cleaned_text)
         alt_articles.append({'url':url_alt, 'score':int(pred_prob[0][1]*100), 'source':url_dom})
+    alt_articles=sorted(alt_articles, key = lambda x:x['score'])
     with open('alternatives.pkl', 'w') as f:
         pickle.dump(alt_articles,f)
     return True
