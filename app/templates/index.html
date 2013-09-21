@@ -1,7 +1,9 @@
 {% extends "base.html" %}
 
 {% block css %}
-
+.text-center {
+    text-align: center !important;
+}
 {% endblock %}
 
 {% block content %}
@@ -32,21 +34,23 @@
 			<h5>We can accurately classify news articles from opinion articles.</h5>
 			<table class="table well">
 				<thead>
-					<tr> <td>Article Type</td> <td>Hype score</td> <td>Headline</td> </tr>
+					<tr> <td>Article Type</td> <td><div class="text-center">Hype score</div></td> <td>Headline</td> </tr>
 				</thead>
 				<tbody>
-
 					<tr>
 						<td>Opinion</td>
-						<td align="right">{{examples[0].score}}</td>
-						<td><a href="/article?request_url={{examples[0].url}}">{{examples[0].title}}</a></td>
+						<td><div class="text-center">99</div></td>
+						<td><a href="/article?request_url=http://www.nytimes.com/2013/09/11/opinion/friedman-threaten-to-threaten.html?_r=0">
+							 	Threaten to Threaten</a></td>
 						<td></td>	
 					</tr>
 					<tr>
-						<td>News</td>
-						<td align="right">{{examples[1].score}}</td>
-						<td><a href="/article?request_url={{examples[1].url}}">{{examples[1].title}}</a></td>
+						<td>Opinion</td>
+						<td><div class = 'text-center'>4</div></td>
+						<td><a href="/article?request_url=http://www.nytimes.com/2013/09/17/world/europe/us-and-allies-tell-syria-to-dismantle-chemical-arms-quickly.html?ref=world"> 	U.S. and Allies Push for Strong U.N. Measure on Syria’s Arms</a></td>
 						<td></td>	
+					</tr>
+
 					</tr>
 				</tbody>
 			</table>

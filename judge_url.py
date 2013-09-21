@@ -58,7 +58,7 @@ class JudgeUrl(object):
 		pred_prob = [[np.exp(choice0)/(np.exp(choice0)+np.exp(choice1)), np.exp(choice1)/(np.exp(choice0)+np.exp(choice1))]]
 
 		##  Top words from tf-idf
-		word_i = np.argsort(tfidf_sample)[-5:]
+		word_i = np.argsort(tfidf_sample)[-10:]
 		top_words = [self.training_word_list[i].encode("utf8","ignore") for i in word_i]
 		search_string = ''
 		top_words.reverse()
@@ -91,7 +91,7 @@ class JudgeUrl(object):
 		self.a.score = self.convert_prob2score(pred_prob)
 
 		##  Top words from tf-idf
-		word_i = np.argsort(tfidf_sample)[-5:]
+		word_i = np.argsort(tfidf_sample)[-10:]
 		top_words = [self.training_word_list[i].encode("utf8","ignore") for i in word_i]
 		search_string = ''
 		top_words.reverse()

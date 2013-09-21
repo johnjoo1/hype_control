@@ -84,14 +84,19 @@ def index():
     example_urls = ['http://www.nytimes.com/2013/09/11/opinion/friedman-threaten-to-threaten.html?_r=0',
                         'http://www.nytimes.com/2013/09/17/world/europe/us-and-allies-tell-syria-to-dismantle-chemical-arms-quickly.html?ref=world'
                             ]
+    examples=[]
+
 
     # possible_examples = ['http://nypost.com/2013/09/15/obamacare-will-question-your-sex-life/',
     #                         'http://www.dailykos.com/story/2013/04/26/1204994/-Bush-will-go-down-in-history-as-person-who-doomed-the-planet',
     #                         ]
-    examples = []
-    for url in example_urls:
-        j  = judge_url.JudgeUrl(url)
-        examples.append(j.a)
+    ##############################################
+    ## Use these for judging examples##########
+    # examples = []
+    # for url in example_urls:
+    #     j  = judge_url.JudgeUrl(url)
+    #     examples.append(j.a)
+    ###############################################
 
     # but_fox = ['http://www.foxnews.com/politics/2013/09/13/emails-show-irs-official-lerner-involved-in-tea-party-screening/']
     # but_fox_examples = []
@@ -126,7 +131,8 @@ def index():
 
 @app.route('/slides')
 def slides():
-    pass
+    return render_template("slides.html",
+        )
 
 
 @app.route('/contact')
@@ -282,20 +288,34 @@ def store_alternatives():
     alt_articles=[]       
     bing_results = bing.search('News',query_string,params).json() # requests 1.0+
     results = bing_results['d']['results']
+    valid_links=0
     for i,result in enumerate(results):
-        if i >= 5:
+        read_success = 0 
+        print i, result
+        
+        if valid_links >= 5:
             break
         opener = urllib2.build_opener(urllib2.HTTPCookieProcessor())
         url_alt = result['Url']
         url_dom = url_alt.split('/')[2]
-        response = opener.open(url_alt)
-        raw_html = response.read()
-        g = goose.Goose()
-        art = g.extract(raw_html=raw_html)
-        # pred, pred_prob = model.predict(raw_text=art.cleaned_text)
-        j = judge_url.JudgeUrl('')
-        pred_prob = j.evaluate_raw_text(art.cleaned_text)
-        alt_articles.append({'url':url_alt, 'score':int(pred_prob[0][1]*100), 'source':url_dom})
+        try:
+            response = opener.open(url_alt)
+            read_success = 1
+        except urllib2.HTTPError, err:
+           continue
+        if read_success ==1:
+            raw_html = response.read()
+            g = goose.Goose()
+            art = g.extract(raw_html=raw_html)
+            valid_links+=1
+            print len(art.cleaned_text)
+
+        if len(art.cleaned_text)>20:
+            # pred, pred_prob = model.predict(raw_text=art.cleaned_text)
+            j = judge_url.JudgeUrl('')
+            pred_prob = j.evaluate_raw_text(art.cleaned_text)
+            alt_articles.append({'url':url_alt, 'score':int(pred_prob[0][1]*100), 'source':url_dom})
+        print '\n'
     alt_articles=sorted(alt_articles, key = lambda x:x['score'])
     with open('alternatives.pkl', 'w') as f:
         pickle.dump(alt_articles,f)
