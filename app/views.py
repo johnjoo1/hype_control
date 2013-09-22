@@ -224,13 +224,14 @@ def article():
     g = goose.Goose()
     a = g.extract(raw_html=raw_html)
     a.html_text = Markup(markdown.markdown(a.cleaned_text))
-    print 'scrape: '+str(time.time()-stime)
+    print 'article scrape: '+str(time.time()-stime)
 
     # pred, pred_prob = model.predict(raw_text=a.cleaned_text)
+    stime=time.time()
     j = judge_url.JudgeUrl('')
     pred_prob = j.evaluate_raw_text(a.cleaned_text)
     a.score = int(pred_prob[0][1]*100.)
-
+    print 'article judge: '+str(time.time()-stime)
     # stime=time.time()
     # op_words = model.why_opinion_faster()
     # print 'why: '+str(time.time()-stime)    
@@ -264,8 +265,10 @@ def article():
     #     pred, pred_prob = model.predict(raw_text=art.cleaned_text)
     #     alt_articles.append({'url':url_alt, 'score':int(pred_prob[0][1]*100), 'source':url_dom})
     # print 'bing and predict: '+str(time.time()-stime)
+    stime=time.time()
     with open('temp_cleaned_text.pkl', 'w') as f:
         pickle.dump([a.cleaned_text, a.title, j.search_string],f)
+    print 'article pickle: '+str(time.time()-stime)
 
     return render_template("article.html",
         url=url,
@@ -276,20 +279,23 @@ def article():
 
 @app.route('/store_alternatives')
 def store_alternatives():
+    stime=time.time()
     with open('temp_cleaned_text.pkl', 'r') as f:
         [cleaned_text, title, search_string] = pickle.load(f)
 
     my_key = "vknjCZkZel4gofUWhubpLS0pXUXLbD5VqzIFgkXUHCg="
     query_string = '"'+search_string+'"'
-    print search_string
+    #print search_string
     bing = BingSearchAPI(my_key)
     params = {
               }
     alt_articles=[]       
     bing_results = bing.search('News',query_string,params).json() # requests 1.0+
     results = bing_results['d']['results']
+    print 'store alternatives Bing search: '+str(time.time()-stime)
     valid_links=0
     for i,result in enumerate(results):
+        stime=time.time()
         read_success = 0 
         print i, result
         
@@ -316,6 +322,7 @@ def store_alternatives():
             pred_prob = j.evaluate_raw_text(art.cleaned_text)
             alt_articles.append({'url':url_alt, 'score':int(pred_prob[0][1]*100), 'source':url_dom})
         print '\n'
+        print 'store alternative scrape and judge: '+str(time.time()-stime)
     alt_articles=sorted(alt_articles, key = lambda x:x['score'])
     with open('alternatives.pkl', 'w') as f:
         pickle.dump(alt_articles,f)
@@ -327,14 +334,17 @@ def store_why():
     print 'store why is starting'
     # op_words = model.why_opinion_faster()
     # op_sents = model.rank_sents()   
+    stime=time.time()
     with open('trained_objects.pkl', 'r') as p:
             [feature_log_prob, intercept, training_word_list, training_counts] = pickle.load(p)
     with open('temp_cleaned_text.pkl', 'r') as f:
         [cleaned_text, title, search_string] = pickle.load(f)
+    print 'store why load data: '+str(time.time()-stime)
+
+    stime=time.time()
     tfidf_transformer = TfidfTransformer()
     tfidf_training = tfidf_transformer.fit_transform(training_counts.toarray())
     count_vectorizer_sample = CountVectorizer(encoding=u'utf-8', stop_words = nltk.corpus.stopwords.words('english'))
-
 
     choice1_logs = []
     sent_tokenizer=nltk.data.load('tokenizers/punkt/english.pickle')
@@ -361,14 +371,16 @@ def store_why():
     s_choice1_logs = sorted(choice1_logs, key = lambda x:x[0])
     s_choice1_logs.reverse()
     op_sents = s_choice1_logs
+    # print op_sents
+    print 'store why judged each sentence: '+str(time.time()-stime)
 
-    print op_sents
-
+    stime=time.time()
     bolded_text = bold_sents(cleaned_text, op_sents)
-    print bolded_text
+    # print bolded_text
     with open('bolded_text.pkl','w') as f:
         t=Markup(markdown.markdown(bolded_text))
         pickle.dump([t, op_sents],f)
+    print 'bold text and store: '+str(time.time()-stime)
     return True
 
 from flask import jsonify
