@@ -394,6 +394,7 @@ def display_why():
     # return jsonify({'main_text':t, 'op_words': op_words})
 
     ## for sentences
+    print 'start display why'
     stime=time.time()
     with open('bolded_text.pkl', 'r') as f:
         t, op_sents = pickle.load(f)
