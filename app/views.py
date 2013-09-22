@@ -313,7 +313,7 @@ def store_alternatives():
             raw_html = response.read()
             g = goose.Goose()
             art = g.extract(raw_html=raw_html)
-            valid_links+=1
+            
             print len(art.cleaned_text)
 
         if len(art.cleaned_text)>20:
@@ -321,6 +321,7 @@ def store_alternatives():
             j = judge_url.JudgeUrl('')
             pred_prob = j.evaluate_raw_text(art.cleaned_text)
             alt_articles.append({'url':url_alt, 'score':int(pred_prob[0][1]*100), 'source':url_dom})
+            valid_links+=1
         print '\n'
         print 'store alternative scrape and judge: '+str(time.time()-stime)
     alt_articles=sorted(alt_articles, key = lambda x:x['score'])
@@ -393,9 +394,11 @@ def display_why():
     # return jsonify({'main_text':t, 'op_words': op_words})
 
     ## for sentences
+    stime=time.time()
     with open('bolded_text.pkl', 'r') as f:
         t, op_sents = pickle.load(f)
         op_sents.reverse()
+    print 'display why: '+str(time.time()-stime)
     return jsonify({'main_text':t, 'op_sents': op_sents})
 
 
