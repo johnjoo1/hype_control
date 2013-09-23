@@ -50,6 +50,9 @@
 </div>
 
 <script>
+console.log({{temp_cleaned_data|tojson|safe}})
+temp_cleaned_data = {{temp_cleaned_data|tojson|safe}};
+console.log(temp_cleaned_data[0]);
 
 $( document ).ready(function() {
   var score_text = parseInt($('#score').text(), 10);
@@ -74,10 +77,15 @@ $( document ).ready(function() {
 // Displays the "why" word table in a bootstrap table with button click AND changes the main text to bold opinion words
 $("#display_why_button").click(function () {
   $('#display_why_button_div').html('<img src="static/img/484.gif" alt="Loading...">')
-   $.get('/store_why', function(rdata){ 
-        $("#main_text").html(rdata['main_text']);
-        $('#display_why_button_div').html('Biased sentences are now bolded.');   // computes and stores why data in a pickle file
-      });
+   var posting = $.post( '/store_why',  {cleaned_text:temp_cleaned_data[0], title:temp_cleaned_data[1], search_terms:temp_cleaned_data[2]})
+    .done(function(rdata){ 
+          $("#main_text").html(rdata['main_text']);
+          $('#display_why_button_div').html('Biased sentences are now bolded.');   // computes and stores why data in a pickle file
+        });
+   // $.get('/store_why', function(rdata){ 
+   //      $("#main_text").html(rdata['main_text']);
+   //      $('#display_why_button_div').html('Biased sentences are now bolded.');   // computes and stores why data in a pickle file
+   //    });
   // $.get("/display_why", function(data) {        // gets the data
   //   $("#main_text").html(data['main_text']);        // bolds the opinion words in the main text
 
@@ -90,20 +98,35 @@ $("#display_why_button").click(function () {
 // Displays the "alternatives"
 $("#display_alternatives_button").click(function () {
   $('#display_alternatives_button_div').html('<img src="static/img/484.gif" alt="Loading...">')
-  $.get('/store_alternatives', function(data){      // computes and stores alternatives data in a pickle file
-    var table_html='<br> <table class="table table-condensed"><thead><tr><td>Score</td> <td>Source</td> </tr></thead>';    // creates the word table
-    table_html+='<tbody>';
-    $.each(data['aa'], function(i, value){
-      if (i<100){
-      table_html+='<tr><td>'+value['score']+'</td><td><a href="'+value['url']+'">'+value['source']+'</a></td></tr>';
-      }else{
-        table_html+='</tbody></table>';
-        return false;
-      }
+  var posting = $.post( '/store_alternatives',  {cleaned_text:temp_cleaned_data[0], title:temp_cleaned_data[1], search_terms:temp_cleaned_data[2]})
+    .done(function(rdata){ 
+      var table_html='<br> <table class="table table-condensed"><thead><tr><td>Score</td> <td>Source</td> </tr></thead>';    // creates the word table
+      table_html+='<tbody>';
+      $.each(rdata['aa'], function(i, value){
+        if (i<100){
+        table_html+='<tr><td>'+value['score']+'</td><td><a href="'+value['url']+'">'+value['source']+'</a></td></tr>';
+        }else{
+          table_html+='</tbody></table>';
+          return false;
+        }
+      });
+      $('#display_alternatives_button_div').html('')
+      $('#show_alternatives').html(table_html);
     });
-  $('#display_alternatives_button_div').html('')
-  $('#show_alternatives').html(table_html);
-  });
+  // $.get('/store_alternatives', function(data){      // computes and stores alternatives data in a pickle file
+  //   var table_html='<br> <table class="table table-condensed"><thead><tr><td>Score</td> <td>Source</td> </tr></thead>';    // creates the word table
+  //   table_html+='<tbody>';
+  //   $.each(data['aa'], function(i, value){
+  //     if (i<100){
+  //     table_html+='<tr><td>'+value['score']+'</td><td><a href="'+value['url']+'">'+value['source']+'</a></td></tr>';
+  //     }else{
+  //       table_html+='</tbody></table>';
+  //       return false;
+  //     }
+  //   });
+  // $('#display_alternatives_button_div').html('')
+  // $('#show_alternatives').html(table_html);
+  // });
 
   // $.get("/display_alternatives", function(data) {        // gets the data
   //   var table_html='<br> <table class="table table-condensed"><thead><tr><td>Score</td> <td>Source</td> </tr></thead>';    // creates the word table

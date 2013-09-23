@@ -231,23 +231,28 @@ def article():
     a.score = int(pred_prob[0][1]*100.)
     print 'article judge: '+str(time.time()-stime)
     stime=time.time()
-    with open('temp_cleaned_text.pkl', 'w') as f:
-        pickle.dump([a.cleaned_text, a.title, j.search_string],f)
+    # with open('temp_cleaned_text.pkl', 'w') as f:
+    #     pickle.dump([a.cleaned_text, a.title, j.search_string],f)
     print 'article pickle: '+str(time.time()-stime)
-
+    temp_cleaned_data = [a.cleaned_text, a.title, j.search_string]
+    # return jsonify({'temp_cleaned_text':temp_cleaned_data})
     return render_template("article.html",
         url=url,
         a=a,
         # alt_articles = alt_articles, 
-        main_text = a.html_text
+        main_text = a.html_text, 
+        temp_cleaned_data = temp_cleaned_data
         )
 
-@app.route('/store_alternatives')
+@app.route('/store_alternatives', methods=['POST'])
 def store_alternatives():
     stime=time.time()
-    with open('temp_cleaned_text.pkl', 'r') as f:
-        [cleaned_text, title, search_string] = pickle.load(f)
 
+    # with open('temp_cleaned_text.pkl', 'r') as f:
+    #     [cleaned_text, title, search_string] = pickle.load(f)
+    l = request.form
+    [cleaned_text, title, search_string] = [l['cleaned_text'], l['title'], l['search_terms']]
+    
     my_key = "vknjCZkZel4gofUWhubpLS0pXUXLbD5VqzIFgkXUHCg="
     query_string = '"'+search_string+'"'
     #print search_string
@@ -290,17 +295,17 @@ def store_alternatives():
         print '\n'
         print 'store alternative scrape and judge: '+str(time.time()-stime)
     alt_articles=sorted(alt_articles, key = lambda x:x['score'])
-    with open('alternatives.pkl', 'w') as f:
-        pickle.dump(alt_articles,f)
+    # with open('alternatives.pkl', 'w') as f:
+    #     pickle.dump(alt_articles,f)
     return jsonify({'aa':alt_articles})
 
-@app.route('/display_alternatives')
-def display_alternatives():
-    with open('alternatives.pkl', 'r') as f:
-        alt_articles = pickle.load(f)
-    return jsonify({'aa':alt_articles})
+# @app.route('/display_alternatives')
+# def display_alternatives():
+#     with open('alternatives.pkl', 'r') as f:
+#         alt_articles = pickle.load(f)
+#     return jsonify({'aa':alt_articles})
 
-@app.route('/store_why')
+@app.route('/store_why', methods=['POST'])
 def store_why():
     print 'store why is starting'
     # op_words = model.why_opinion_faster()
@@ -308,8 +313,11 @@ def store_why():
     stime=time.time()
     with open('trained_objects.pkl', 'r') as p:
             [feature_log_prob, intercept, training_word_list, training_counts] = pickle.load(p)
-    with open('temp_cleaned_text.pkl', 'r') as f:
-        [cleaned_text, title, search_string] = pickle.load(f)
+    # with open('temp_cleaned_text.pkl', 'r') as f:
+    #     [cleaned_text, title, search_string] = pickle.load(f)
+
+    l = request.form
+    [cleaned_text, title, search_string] = [l['cleaned_text'], l['title'], l['search_terms']]
     print 'store why load data: '+str(time.time()-stime)
 
     stime=time.time()
@@ -348,9 +356,9 @@ def store_why():
     stime=time.time()
     bolded_text = bold_sents(cleaned_text, op_sents)
     # print bolded_text
-    with open('bolded_text.pkl','w') as f:
-        t=Markup(markdown.markdown(bolded_text))
-        pickle.dump([t, op_sents],f)
+    # with open('bolded_text.pkl','w') as f:
+    #     t=Markup(markdown.markdown(bolded_text))
+    #     pickle.dump([t, op_sents],f)
     print 'bold text and store: '+str(time.time()-stime)
 
     op_sents.reverse()
@@ -358,14 +366,14 @@ def store_why():
     return jsonify({'main_text':t, 'op_sents': op_sents})
 
 
-@app.route('/display_why')
-def display_why():
-    ## for sentences
-    print 'start display why'
-    stime=time.time()
-    with open('bolded_text.pkl', 'r') as f:
-        t, op_sents = pickle.load(f)
-        op_sents.reverse()
-    print 'display why: '+str(time.time()-stime)
-    return jsonify({'main_text':t, 'op_sents': op_sents})
+# @app.route('/display_why')
+# def display_why():
+#     ## for sentences
+#     print 'start display why'
+#     stime=time.time()
+#     with open('bolded_text.pkl', 'r') as f:
+#         t, op_sents = pickle.load(f)
+#         op_sents.reverse()
+#     print 'display why: '+str(time.time()-stime)
+#     return jsonify({'main_text':t, 'op_sents': op_sents})
 
