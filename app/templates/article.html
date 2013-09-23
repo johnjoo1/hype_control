@@ -64,66 +64,33 @@ $( document ).ready(function() {
   }
 
 
-  $.get('/store_why', function(data){    // computes and stores why data in a pickle file
-  });
-  $.get('/store_alternatives', function(data){      // computes and stores alternatives data in a pickle file
-  });
+  // $.get('/store_why', function(data){    // computes and stores why data in a pickle file
+  // });
+  // $.get('/store_alternatives', function(data){      // computes and stores alternatives data in a pickle file
+  // });
 }); 
 
 
 // Displays the "why" word table in a bootstrap table with button click AND changes the main text to bold opinion words
 $("#display_why_button").click(function () {
   $('#display_why_button_div').html('<img src="static/img/484.gif" alt="Loading...">')
-  $.get("/display_why", function(data) {        // gets the data
-    $("#main_text").html(data['main_text']);        // bolds the opinion words in the main text
+   $.get('/store_why', function(rdata){ 
+        $("#main_text").html(rdata['main_text']);
+        $('#display_why_button_div').html('Biased sentences are now bolded.');   // computes and stores why data in a pickle file
+      });
+  // $.get("/display_why", function(data) {        // gets the data
+  //   $("#main_text").html(data['main_text']);        // bolds the opinion words in the main text
 
-//     var table_html='<br> <table class="table table-condensed"><thead><tr><td>Opinion<br>score</td> <td>Word</td> </tr></thead>';    // creates the word table
-//     table_html+='<tbody>';
-//     $.each(data['op_words'], function(i, value){
-//       if (i<100){
-//       table_html+='<tr><td>'+value[2]+'</td><td>'+value[3]+'</td></tr>';
-//       }else{
-//         table_html+='</tbody></table>';
-//         return false;
-//       }
-//     });
-  $('#display_why_button_div').html('')
-//   $('#show_why').html(table_html);
+  
 
-// // // Add 5 more rows  ////////////////////////////
-//   var numShown = 5; // Initial rows shown & index
-//   var numMore = 5;  // Increment
-
-//   var $table = $('table').find('tbody');  // tbody containing all the rows
-//   var numRows = $table.find('tr').length; // Total # rows
-
-//   // Hide rows and add clickable div
-//   $table.find('tr:gt(' + (numShown - 1) + ')').hide().end()
-//       .after('<tbody id="more"><tr><td colspan="' +
-//              $table.find('tr:first td').length + '"><div>Show <span>' +
-//              numMore + '</span> More</div</tbody></td></tr>');
-
-//   $('#more').click(function() {
-//       numShown = numShown + numMore;
-//       // no more "show more" if done
-//       if (numShown >= numRows) {
-//           $('#more').remove();
-//       }
-//       // change rows remaining if less than increment
-//       if (numRows - numShown < numMore) {
-//           $('#more span').html(numRows - numShown);
-//       }
-//       $table.find('tr:lt(' + numShown + ')').show();
-//     });
-// // /////////////////////////
-  });
+  //     });
 });
 
 // //////////////////////////////////
 // Displays the "alternatives"
 $("#display_alternatives_button").click(function () {
   $('#display_alternatives_button_div').html('<img src="static/img/484.gif" alt="Loading...">')
-  $.get("/display_alternatives", function(data) {        // gets the data
+  $.get('/store_alternatives', function(data){      // computes and stores alternatives data in a pickle file
     var table_html='<br> <table class="table table-condensed"><thead><tr><td>Score</td> <td>Source</td> </tr></thead>';    // creates the word table
     table_html+='<tbody>';
     $.each(data['aa'], function(i, value){
@@ -137,6 +104,21 @@ $("#display_alternatives_button").click(function () {
   $('#display_alternatives_button_div').html('')
   $('#show_alternatives').html(table_html);
   });
+
+  // $.get("/display_alternatives", function(data) {        // gets the data
+  //   var table_html='<br> <table class="table table-condensed"><thead><tr><td>Score</td> <td>Source</td> </tr></thead>';    // creates the word table
+  //   table_html+='<tbody>';
+  //   $.each(data['aa'], function(i, value){
+  //     if (i<100){
+  //     table_html+='<tr><td>'+value['score']+'</td><td><a href="'+value['url']+'">'+value['source']+'</a></td></tr>';
+  //     }else{
+  //       table_html+='</tbody></table>';
+  //       return false;
+  //     }
+  //   });
+  // $('#display_alternatives_button_div').html('')
+  // $('#show_alternatives').html(table_html);
+  // });
 });
 
 

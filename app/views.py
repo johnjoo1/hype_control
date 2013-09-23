@@ -16,6 +16,8 @@ import pickle
 import nltk
 from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.feature_extraction.text import CountVectorizer
+import threading
+from flask import jsonify
 
 # model = mnb_live.Model()
 # model.reload_raw_data()
@@ -211,10 +213,6 @@ def bold_sents(original_text, sent_to_bold):
 
 @app.route('/article')
 def article():
-    # model = mnb_live.Model()
-    # model.reload_raw_data()
-    # train_text, test_text, train_target, test_target = model.prepare_train_and_test_sets()
-    # model.train()
     stime=time.time()
     opener = urllib2.build_opener(urllib2.HTTPCookieProcessor())
     # url = request.args.get('url', '')
@@ -232,39 +230,6 @@ def article():
     pred_prob = j.evaluate_raw_text(a.cleaned_text)
     a.score = int(pred_prob[0][1]*100.)
     print 'article judge: '+str(time.time()-stime)
-    # stime=time.time()
-    # op_words = model.why_opinion_faster()
-    # print 'why: '+str(time.time()-stime)    
-    # bolded_text = bold_words(a.cleaned_text, op_words)
-    # a.html_text = Markup(markdown.markdown(bolded_text))
-
-
-    # stime=time.time()
-    # my_key = "vknjCZkZel4gofUWhubpLS0pXUXLbD5VqzIFgkXUHCg="
-    # query_string = '"'+j.search_string+'"'
-    # bing = BingSearchAPI(my_key)
-    # params = {
-    #         # 'ImageFilters':'"Face:Face"',
-    #         #   '$format': 'json',
-    #         #   '$top': 10,
-    #         #   '$skip': 0
-    #           }
-    # alt_articles=[]       
-    # bing_results = bing.search('Web',query_string,params).json() # requests 1.0+
-    # results = bing_results['d']['results']
-    # for i,result in enumerate(results):
-    #     if i >= 3:
-    #         break
-    #     opener = urllib2.build_opener(urllib2.HTTPCookieProcessor())
-    #     url_alt = result['Url']
-    #     url_dom = url_alt.split('/')[2]
-    #     response = opener.open(url_alt)
-    #     raw_html = response.read()
-    #     g = goose.Goose()
-    #     art = g.extract(raw_html=raw_html)
-    #     pred, pred_prob = model.predict(raw_text=art.cleaned_text)
-    #     alt_articles.append({'url':url_alt, 'score':int(pred_prob[0][1]*100), 'source':url_dom})
-    # print 'bing and predict: '+str(time.time()-stime)
     stime=time.time()
     with open('temp_cleaned_text.pkl', 'w') as f:
         pickle.dump([a.cleaned_text, a.title, j.search_string],f)
@@ -327,8 +292,13 @@ def store_alternatives():
     alt_articles=sorted(alt_articles, key = lambda x:x['score'])
     with open('alternatives.pkl', 'w') as f:
         pickle.dump(alt_articles,f)
-    return True
+    return jsonify({'aa':alt_articles})
 
+@app.route('/display_alternatives')
+def display_alternatives():
+    with open('alternatives.pkl', 'r') as f:
+        alt_articles = pickle.load(f)
+    return jsonify({'aa':alt_articles})
 
 @app.route('/store_why')
 def store_why():
@@ -382,17 +352,14 @@ def store_why():
         t=Markup(markdown.markdown(bolded_text))
         pickle.dump([t, op_sents],f)
     print 'bold text and store: '+str(time.time()-stime)
-    return True
 
-from flask import jsonify
+    op_sents.reverse()
+    t=Markup(markdown.markdown(bolded_text))
+    return jsonify({'main_text':t, 'op_sents': op_sents})
+
+
 @app.route('/display_why')
 def display_why():
-    ## for words
-    # with open('bolded_text.pkl', 'r') as f:
-    #     t, op_words = pickle.load(f)
-    #     op_words.reverse()
-    # return jsonify({'main_text':t, 'op_words': op_words})
-
     ## for sentences
     print 'start display why'
     stime=time.time()
@@ -402,9 +369,3 @@ def display_why():
     print 'display why: '+str(time.time()-stime)
     return jsonify({'main_text':t, 'op_sents': op_sents})
 
-
-@app.route('/display_alternatives')
-def display_alternatives():
-    with open('alternatives.pkl', 'r') as f:
-        alt_articles = pickle.load(f)
-    return jsonify({'aa':alt_articles})
