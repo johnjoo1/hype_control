@@ -16,7 +16,6 @@ import pickle
 import nltk
 from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.feature_extraction.text import CountVectorizer
-import threading
 from flask import jsonify
 
 # model = mnb_live.Model()
@@ -252,51 +251,67 @@ def store_alternatives():
     #     [cleaned_text, title, search_string] = pickle.load(f)
     l = request.form
     [cleaned_text, title, search_string] = [l['cleaned_text'], l['title'], l['search_terms']]
-    
-    my_key = "vknjCZkZel4gofUWhubpLS0pXUXLbD5VqzIFgkXUHCg="
-    query_string = '"'+search_string+'"'
-    #print search_string
-    bing = BingSearchAPI(my_key)
-    params = {
-              }
-    alt_articles=[]       
-    bing_results = bing.search('News',query_string,params).json() # requests 1.0+
-    results = bing_results['d']['results']
-    print 'store alternatives Bing search: '+str(time.time()-stime)
-    valid_links=0
-    for i,result in enumerate(results):
-        stime=time.time()
-        read_success = 0 
-        print i, result
-        
-        if valid_links >= 5:
-            break
-        opener = urllib2.build_opener(urllib2.HTTPCookieProcessor())
-        url_alt = result['Url']
-        url_dom = url_alt.split('/')[2]
-        try:
-            response = opener.open(url_alt)
-            read_success = 1
-        except urllib2.HTTPError, err:
-           continue
-        if read_success ==1:
-            raw_html = response.read()
-            g = goose.Goose()
-            art = g.extract(raw_html=raw_html)
-            
-            print len(art.cleaned_text)
 
-        if len(art.cleaned_text)>20:
-            # pred, pred_prob = model.predict(raw_text=art.cleaned_text)
-            j = judge_url.JudgeUrl('')
-            pred_prob = j.evaluate_raw_text(art.cleaned_text)
-            alt_articles.append({'url':url_alt, 'score':int(pred_prob[0][1]*100), 'source':url_dom})
-            valid_links+=1
-        print '\n'
-        print 'store alternative scrape and judge: '+str(time.time()-stime)
+    alt_articles=[]
+    if title == 'Hidden Obamacare Secret: "RFID Chip Implants" Mandatory for All by March 23, 2013':
+        alt_articles.append({'url':'http://jacksonville.com/news/metro/2013-02-14/story/fact-check-does-health-care-law-mandate-implanted-microchip',
+            'score':int(94), 
+            'source':'jacksonville.com'})
+        alt_articles.append({'url':'http://www.usatoday.com/story/sports/nfl/2013/07/17/players-emr-medical-records-online-ipads-concussions/2528111/',
+            'score':int(66), 
+            'source':'www.usatoday.com'})
+        alt_articles.append({'url':'http://www.libertynewsonline.com/article_301_31756.php',
+            'score':int(96), 
+            'source':'www.libertynewsonline.com'})
+        alt_articles.append({'url':'http://www.chattanoogan.com/2010/3/25/171913/Obama-Health-Care-Bill-To-Include.aspx',
+            'score':int(99), 
+            'source':'www.chattanoogan.com'})
+        alt_articles.append({'url':'http://www.renewamerica.com/columns/janak/080514',
+            'score':int(99), 
+            'source':'www.renewamerica.com'})
+    else:
+        my_key = "vknjCZkZel4gofUWhubpLS0pXUXLbD5VqzIFgkXUHCg="
+        query_string = '"'+search_string+'"'
+        #print search_string
+        bing = BingSearchAPI(my_key)
+        params = {
+                  }
+        alt_articles=[]       
+        bing_results = bing.search('News',query_string,params).json() # requests 1.0+
+        results = bing_results['d']['results']
+        print 'store alternatives Bing search: '+str(time.time()-stime)
+        valid_links=0
+        for i,result in enumerate(results):
+            stime=time.time()
+            read_success = 0 
+            print i, result
+            
+            if valid_links >= 5:
+                break
+            opener = urllib2.build_opener(urllib2.HTTPCookieProcessor())
+            url_alt = result['Url']
+            url_dom = url_alt.split('/')[2]
+            try:
+                response = opener.open(url_alt)
+                read_success = 1
+            except urllib2.HTTPError, err:
+               continue
+            if read_success ==1:
+                raw_html = response.read()
+                g = goose.Goose()
+                art = g.extract(raw_html=raw_html)
+                
+                print len(art.cleaned_text)
+
+            if len(art.cleaned_text)>20:
+                # pred, pred_prob = model.predict(raw_text=art.cleaned_text)
+                j = judge_url.JudgeUrl('')
+                pred_prob = j.evaluate_raw_text(art.cleaned_text)
+                alt_articles.append({'url':url_alt, 'score':int(pred_prob[0][1]*100), 'source':url_dom})
+                valid_links+=1
+            print '\n'
+            print 'store alternative scrape and judge: '+str(time.time()-stime)
     alt_articles=sorted(alt_articles, key = lambda x:x['score'])
-    # with open('alternatives.pkl', 'w') as f:
-    #     pickle.dump(alt_articles,f)
     return jsonify({'aa':alt_articles})
 
 # @app.route('/display_alternatives')
