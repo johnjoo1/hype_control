@@ -1,0 +1,12 @@
+#!/usr/bin/python
+
+#/home/johnjoo/Desktop/insight/hype_control/env/bin/python
+# from app import app
+from flask import Flask
+application = Flask(__name__)
+app = application
+
+if __name__=="__main__":
+    app.run(debug = True_#, host='0.0.0.0', port = 80)
+    from flaskext.markdown import Markdown
+    Markdown(app)

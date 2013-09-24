@@ -1,0 +1,13 @@
+[global]
+ApplicationName=hype-control
+AwsCredentialFile=/home/johnjoo/.elasticbeanstalk/aws_credential_file
+DevToolsEndpoint=git.elasticbeanstalk.us-west-2.amazonaws.com
+EnvironmentName=hype-control-env
+EnvironmentType=LoadBalanced
+InstanceProfileName=aws-elasticbeanstalk-ec2-role
+OptionSettingFile=/home/johnjoo/Desktop/insight/hype_control/flask/.elasticbeanstalk/optionsettings.hype-control-env
+RdsEnabled=No
+Region=us-west-2
+ServiceEndpoint=https://elasticbeanstalk.us-west-2.amazonaws.com
+SolutionStack=64bit Amazon Linux running Python
+
