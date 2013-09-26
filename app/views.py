@@ -138,7 +138,8 @@ def slides():
 
 @app.route('/contact')
 def contact():
-    pass
+    return render_template("contact.html",
+        )
 
 
 #################
