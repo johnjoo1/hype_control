@@ -198,14 +198,21 @@ def bold_words(original_text, words_to_bold):
             bolded = re.sub('(?i)( '+word[3]+' )', r'**\1**', bolded)
     return bolded
 
-def bold_sents(original_text, sent_to_bold):
+def bold_sents(original_text, sent_to_bold, score):
     bolded = original_text
-    for sent in sent_to_bold:
-        if sent[0]>-9:
-            if sent[1].startswith('"\n\n'):
-                bolded = bolded.replace(sent[1].lstrip('"\n'), '**'+sent[1].lstrip('"\n')+'**')
-            else:
-                bolded = bolded.replace(sent[1], '**'+sent[1]+'**')
+    num_sent = int(score)/15
+    for sent in sent_to_bold[:num_sent]:
+        if sent[1].startswith('"\n\n'):
+            bolded = bolded.replace(sent[1].lstrip('"\n'), '**'+sent[1].lstrip('"\n')+'**')
+        else:
+            bolded = bolded.replace(sent[1], '**'+sent[1]+'**')
+
+    # for sent in sent_to_bold:
+    #     if sent[0]>-9:
+    #         if sent[1].startswith('"\n\n'):
+    #             bolded = bolded.replace(sent[1].lstrip('"\n'), '**'+sent[1].lstrip('"\n')+'**')
+    #         else:
+    #             bolded = bolded.replace(sent[1], '**'+sent[1]+'**')
     return bolded
 
 
@@ -233,7 +240,7 @@ def article():
     # with open('temp_cleaned_text.pkl', 'w') as f:
     #     pickle.dump([a.cleaned_text, a.title, j.search_string],f)
     print 'article pickle: '+str(time.time()-stime)
-    temp_cleaned_data = [a.cleaned_text, a.title, j.search_string]
+    temp_cleaned_data = [a.cleaned_text, a.title, j.search_string, a.score]
     # return jsonify({'temp_cleaned_text':temp_cleaned_data})
     return render_template("article.html",
         url=url,
@@ -332,7 +339,7 @@ def store_why():
     #     [cleaned_text, title, search_string] = pickle.load(f)
 
     l = request.form
-    [cleaned_text, title, search_string] = [l['cleaned_text'], l['title'], l['search_terms']]
+    [cleaned_text, title, search_string, score] = [l['cleaned_text'], l['title'], l['search_terms'], l['score']]
     print 'store why load data: '+str(time.time()-stime)
 
     stime=time.time()
@@ -369,7 +376,7 @@ def store_why():
     print 'store why judged each sentence: '+str(time.time()-stime)
 
     stime=time.time()
-    bolded_text = bold_sents(cleaned_text, op_sents)
+    bolded_text = bold_sents(cleaned_text, op_sents, score)
     # print bolded_text
     # with open('bolded_text.pkl','w') as f:
     #     t=Markup(markdown.markdown(bolded_text))

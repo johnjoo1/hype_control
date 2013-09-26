@@ -77,7 +77,7 @@ $( document ).ready(function() {
 // Displays the "why" word table in a bootstrap table with button click AND changes the main text to bold opinion words
 $("#display_why_button").click(function () {
   $('#display_why_button_div').html('<img src="static/img/484.gif" alt="Loading...">')
-   var posting = $.post( '/store_why',  {cleaned_text:temp_cleaned_data[0], title:temp_cleaned_data[1], search_terms:temp_cleaned_data[2]})
+   var posting = $.post( '/store_why',  {cleaned_text:temp_cleaned_data[0], title:temp_cleaned_data[1], search_terms:temp_cleaned_data[2], score:temp_cleaned_data[3]})
     .done(function(rdata){ 
           $("#main_text").html(rdata['main_text']);
           $('#display_why_button_div').html('Biased sentences are now bolded.');   // computes and stores why data in a pickle file
