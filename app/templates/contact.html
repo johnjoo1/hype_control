@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block css %}
+.text-center {
+    text-align: center !important;
+}
+{% endblock %}
+
+{% block content %}
+<div class="row">
+<div class="span8 offset2">
+<div class="well">
+<h3> About me</h3>
+<p>
+My name is John Joo.  You can email me at johnjoo1 at gmail dot com.  I created this website in 3 weeks during my Insight Data Science Fellowship.  
+<p>I learned how to use javascript, jQuery, Flask, AWS, python-goose, NLTK, scikit-learn, MySQL, and how multinomial Naive Bayes classifiers work during those 3 weeks.  I used Python a bit during my PhD at Harvard, so thankfully, I didn't have to learn EVERYTHING from scratch, but it was pretty close.
+
+<h3>What the website does</h3>
+<p>
+For those using the website and questioning the accuracy of some of the metrics, I can explain what I did.
+<p>
+The aim of this website is to determine how "hyped" or opinionated any given news article is.  So, I trained a Multinomial Naive Bayes classifier to determine whether a given article was a news article or an opinion article. 
+
+<h3>The training set</h3> 
+<p>
+The training set consisted of news articles and opinion articles from "trusted" sources.  
+
+<p>
+900 domestic and world news articles from Reuters.com were scraped.  Reuters was chosen because they have a reputation for using extremely objective language in their news articles.  They have been so objective in their language that their policy of objective language has created controversy.  For example, after the 9/11 attacks in the United States, Reuters refused to use the word "terrorist" because one man's "terrorist" could be another man's "freedom fighter."  
+
+<p>
+450 opinion articles from the NYTimes.com and 450 opinion articles from FoxNews.com were additionally scraped.  Equal amounts of articles were used from both sources in order to get both sides of political spectrum.  The editorial department of NYTimes has a reputation for having a liberal bias while FoxNews' editorial department has a repuation for having a conservative bias.
+
+<h3>Notes on the classifier/algorithm</h3>
+<p>
+Now, a note about the algorithm/classifer.  Multinomial Naive Bayes has had extreme success in classifying documents.  Indeed, in our cross-validation tests, we see that the classifer predicts the correct type of article (news or opinion) greater than 90% of the time.  However, the scores that are produced by Multinomial Naive Bayes, ie the probability of a particular document being opinion or news, can be slightly more suspect.  Finally, when we score each sentence, the error rates can be very high since the amount of data is so small compared to a full document.  I would adivse taking the "Show me why" results with a grain of salt.
+
+<p>
+The links shown in the "Show me alternatives" are the top 5 search results from a Bing News search on the keywords in the article.  The keywords are determined by the highest weighted terms from tf-idf (term frequency - inverse document frequency).  The corpus that the tf-idf is weighted against is the combined corpus of the news and opinion articles that were scraped.
+
+<h3>A thought on the future</h3>
+<p>
+I think if I were doing this again, I would use support vector machines instead of Naive Bayes.  <a href="http://people.csail.mit.edu/jrennie/papers/icml03-nb.pdf">This article</a> makes it seem like SVM would be a much better method at handling text classification.  Maybe in the future...
+
+<p>
+If you have suggestions, send me an email!
+</div>
+</div>
+</div>
+
+{% endblock %}
