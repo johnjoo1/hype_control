@@ -76,11 +76,11 @@ $( document ).ready(function() {
 
 // Displays the "why" word table in a bootstrap table with button click AND changes the main text to bold opinion words
 $("#display_why_button").click(function () {
-  $('#display_why_button_div').html('<img src="static/img/484.gif" alt="Loading...">')
+  $('#display_why_button_div').html('<img src="static/img/484.gif" alt="Loading..."><br>Calculating the Hype Score for each sentence.')
    var posting = $.post( '/store_why',  {cleaned_text:temp_cleaned_data[0], title:temp_cleaned_data[1], search_terms:temp_cleaned_data[2], score:temp_cleaned_data[3]})
     .done(function(rdata){ 
           $("#main_text").html(rdata['main_text']);
-          $('#display_why_button_div').html('Biased sentences are now bolded.');   // computes and stores why data in a pickle file
+          $('#display_why_button_div').html('Biased sentences are now <b>bolded</b>.');   // computes and stores why data in a pickle file
         });
    // $.get('/store_why', function(rdata){ 
    //      $("#main_text").html(rdata['main_text']);
@@ -97,10 +97,10 @@ $("#display_why_button").click(function () {
 // //////////////////////////////////
 // Displays the "alternatives"
 $("#display_alternatives_button").click(function () {
-  $('#display_alternatives_button_div').html('<img src="static/img/484.gif" alt="Loading...">')
+  $('#display_alternatives_button_div').html('<img src="static/img/484.gif" alt="Loading..."><br>Calculating Hype Scores for first 5 valid search results from <a href="http://www.bing.com/news">Bing News</a> for the following key words:<br><br><b>'+temp_cleaned_data[2]+'</b><br><br><i>This may take a few minutes.</i>')
   var posting = $.post( '/store_alternatives',  {cleaned_text:temp_cleaned_data[0], title:temp_cleaned_data[1], search_terms:temp_cleaned_data[2]})
     .done(function(rdata){ 
-      var table_html='<br> <table class="table table-condensed"><thead><tr><td>Score</td> <td>Source</td> </tr></thead>';    // creates the word table
+      var table_html='<br><table class="table table-condensed"><thead><tr><td>Score</td> <td>Source</td> </tr></thead>';    // creates the word table
       table_html+='<tbody>';
       $.each(rdata['aa'], function(i, value){
         if (i<100){
