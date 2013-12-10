@@ -211,6 +211,7 @@ class Model(object):
 	    cm = confusion_matrix(self.y_test, pred)
 	    print("Confusion matrix:")
 	    print(cm)
+	    self.cm=cm
 
 	def predict(self, raw_text=None, fname=None):
 		if fname:
@@ -269,8 +270,14 @@ class Model(object):
 		# print opinion_words_sorted
 		return opinion_words_sorted #, news_words_sorted
 
-
-
+	def total_benchmark(self,n):
+		total_cm = np.zeros((2,2))
+		for i in range(n):
+			self.prepare_train_and_test_sets()
+			self.train()
+			self.benchmark()
+			total_cm+=self.cm
+		return total_cm
 
 if __name__ == "__main__":
 	m=Model()
@@ -292,3 +299,4 @@ if __name__ == "__main__":
 	# opinion_words, news_words = m.why_opinion()
 	opinion_words = m.why_opinion_faster()
 ##  What words make the certain article that way?  From words, select the top 10 most impactful words.
+	total_cm = m.total_benchmark(10)
